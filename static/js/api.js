@@ -1,7 +1,7 @@
 // API client for work plan calendar system
 
 class PlanAPI {
-    constructor(baseURL = '') {
+    constructor(baseURL = 'http://localhost:8000') {
         this.baseURL = baseURL;
     }
 
