@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工作計畫日曆系統</title>
+    
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+    
+    <!-- Day.js for date handling -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/weekOfYear.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/isoWeek.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../static/css/main.css">
+    
+    <style>
+        /* Custom TailwindCSS configurations */
+        .plan-panel {
+            @apply border border-gray-200 rounded-lg shadow-sm mb-4;
+        }
+        
+        .panel-header {
+            @apply bg-gray-50 border-b border-gray-200 p-3 rounded-t-lg;
+        }
+        
+        .panel-content {
+            @apply p-0;
+        }
+        
+        .markdown-editor {
+            @apply font-mono text-sm border-0 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500;
+        }
+        
+        .markdown-preview {
+            @apply prose prose-sm max-w-none p-4;
+        }
+        
+        .nav-btn {
+            @apply p-2 rounded hover:bg-gray-200 transition-colors;
+        }
+        
+        .action-btn {
+            @apply px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors;
+        }
+        
+        .panel-collapse-transition {
+            @apply transition-all duration-300 ease-in-out;
+        }
+        
+        .preview-toggle-transition {
+            @apply transition-opacity duration-200;
+        }
+        
+        .resize-handle {
+            @apply bg-gray-300 w-1 cursor-col-resize hover:bg-gray-400 transition-colors;
+        }
+        
+        /* Scrollbar styling */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen overflow-hidden">
+    <!-- Main Container -->
+    <div class="flex flex-col h-full">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200 p-4">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-gray-800">工作計畫日曆系統</h1>
+                <div class="flex items-center space-x-4">
+                    <!-- Date Display -->
+                    <div class="text-sm text-gray-600">
+                        <span id="current-date-display"></span>
+                    </div>
+                    
+                    <!-- Main Date Picker -->
+                    <input 
+                        type="date" 
+                        id="main-date-picker" 
+                        class="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                    
+                    <!-- Layout Toggle Button -->
+                    <button 
+                        id="layout-toggle-btn" 
+                        class="nav-btn" 
+                        title="切換左側面板顯示/隱藏"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Left Panel - History Plans -->
+            <div id="left-panel" class="w-1/2 bg-white border-r border-gray-200 flex flex-col">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800">歷史計畫</h2>
+                    <p class="text-sm text-gray-600">瀏覽和編輯前期計畫</p>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-4">
+                    <!-- Year Plan Panel -->
+                    <div id="year-history-panel" class="plan-panel">
+                        <!-- Panel content will be generated by JavaScript -->
+                    </div>
+                    
+                    <!-- Month Plan Panel -->
+                    <div id="month-history-panel" class="plan-panel">
+                        <!-- Panel content will be generated by JavaScript -->
+                    </div>
+                    
+                    <!-- Week Plan Panel -->
+                    <div id="week-history-panel" class="plan-panel">
+                        <!-- Panel content will be generated by JavaScript -->
+                    </div>
+                    
+                    <!-- Day Plan Panel -->
+                    <div id="day-history-panel" class="plan-panel">
+                        <!-- Panel content will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resize Handle -->
+            <div id="resize-handle" class="resize-handle"></div>
+
+            <!-- Right Panel - Current Plans -->
+            <div id="right-panel" class="w-1/2 bg-white flex flex-col">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800">當期計畫</h2>
+                    <p class="text-sm text-gray-600">當前日期對應的所有計畫</p>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-4">
+                    <!-- Current Year Plan Panel -->
+                    <div id="year-current-panel" class="plan-panel">
+                        <!-- Panel content will be generated by JavaScript -->
+                    </div>
+                    
+                    <!-- Current Month Plan Panel -->
+                    <div id="month-current-panel" class="plan-panel">
+                        <!-- Panel content will be generated by JavaScript -->
+                    </div>
+                    
+                    <!-- Current Week Plan Panel -->
+                    <div id="week-current-panel" class="plan-panel">
+                        <!-- Panel content will be generated by JavaScript -->
+                    </div>
+                    
+                    <!-- Current Day Plan Panel -->
+                    <div id="day-current-panel" class="plan-panel">
+                        <!-- Panel content will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 shadow-xl">
+            <div class="flex items-center space-x-3">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <span class="text-gray-700">載入中...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="error-toast" class="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 hidden">
+        <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span id="error-message"></span>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div id="success-toast" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 hidden">
+        <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span id="success-message"></span>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="../static/js/utils.js"></script>
+    <script src="../static/js/api.js"></script>
+    <script src="../static/js/date-picker.js"></script>
+    <script src="../static/js/markdown-editor.js"></script>
+    <script src="../static/js/plan-panel.js"></script>
+    <script src="../static/js/layout-manager.js"></script>
+    <script src="../static/js/app.js"></script>
+</body>
+</html>
