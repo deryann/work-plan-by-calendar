@@ -125,12 +125,16 @@ class PlanPanel {
                             class="markdown-editor focus:ring-2 focus:ring-blue-500"
                             placeholder="輸入 Markdown 內容..."
                         ></textarea>
+                        <div class="vertical-resize-handle" title="拖拉調整高度"></div>
                     </div>
                 </div>
                 
                 <!-- Preview mode -->
                 <div class="preview-mode hidden">
-                    <div class="markdown-preview prose max-w-none p-3 min-h-64 bg-gray-50 rounded"></div>
+                    <div class="markdown-editor-container">
+                        <div class="markdown-preview prose max-w-none p-3 bg-gray-50 rounded-t" style="height: 16rem; min-height: 16rem; max-height: 38rem; flex: none;"></div>
+                        <div class="vertical-resize-handle" title="拖拉調整高度"></div>
+                    </div>
                 </div>
             </div>
         `;
@@ -197,6 +201,9 @@ class PlanPanel {
 
         // Handle textarea resize to sync container height
         this.setupResizeHandler();
+        
+        // Setup vertical resize handle
+        this.setupVerticalResizeHandle();
 
         // Prevent form submission on Enter in editor
         this.editorElement.addEventListener('keydown', (e) => {
@@ -316,7 +323,8 @@ class PlanPanel {
                         const textareaHeight = entry.contentRect.height + 
                             parseFloat(getComputedStyle(this.editorElement).paddingTop) + 
                             parseFloat(getComputedStyle(this.editorElement).paddingBottom);
-                        container.style.height = textareaHeight + 'px';
+                        const resizeHandleHeight = 12;
+                        container.style.height = (textareaHeight + resizeHandleHeight) + 'px';
                     }
                 }
             });
@@ -340,9 +348,92 @@ class PlanPanel {
     syncContainerHeight() {
         const container = this.panelElement.querySelector('.markdown-editor-container');
         const textareaHeight = this.editorElement.offsetHeight;
+        const resizeHandleHeight = 12; // Updated to match CSS
         
-        if (container.offsetHeight !== textareaHeight) {
-            container.style.height = textareaHeight + 'px';
+        if (container.offsetHeight !== textareaHeight + resizeHandleHeight) {
+            container.style.height = (textareaHeight + resizeHandleHeight) + 'px';
+        }
+    }
+
+    /**
+     * Setup vertical resize handle for textarea
+     */
+    setupVerticalResizeHandle() {
+        const resizeHandle = this.panelElement.querySelector('.vertical-resize-handle');
+        const container = this.panelElement.querySelector('.markdown-editor-container');
+        
+        if (!resizeHandle || !container) {
+            console.warn('Resize handle setup failed: elements not found');
+            return;
+        }
+        
+        // Add visual indicator that resize handle is active
+        resizeHandle.style.opacity = '1';
+
+        let isResizing = false;
+        let startY = 0;
+        let startHeight = 0;
+
+        const startResize = (e) => {
+            isResizing = true;
+            startY = e.clientY || e.touches[0].clientY;
+            startHeight = this.editorElement.offsetHeight;
+            
+            resizeHandle.classList.add('dragging');
+            document.body.style.cursor = 'ns-resize';
+            document.body.style.userSelect = 'none';
+            
+            e.preventDefault();
+            
+            document.addEventListener('mousemove', handleResize);
+            document.addEventListener('mouseup', stopResize);
+            document.addEventListener('touchmove', handleResize, { passive: false });
+            document.addEventListener('touchend', stopResize);
+        };
+
+        const handleResize = (e) => {
+            if (!isResizing) return;
+            
+            e.preventDefault();
+            const currentY = e.clientY || e.touches[0].clientY;
+            const deltaY = currentY - startY;
+            const newHeight = Math.max(256, Math.min(608, startHeight + deltaY)); // 16rem to 38rem in px
+            const resizeHandleHeight = 12; // Match CSS height
+            
+            this.editorElement.style.height = newHeight + 'px';
+            container.style.height = (newHeight + resizeHandleHeight) + 'px';
+        };
+
+        const stopResize = () => {
+            if (!isResizing) return;
+            
+            isResizing = false;
+            resizeHandle.classList.remove('dragging');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            
+            document.removeEventListener('mousemove', handleResize);
+            document.removeEventListener('mouseup', stopResize);
+            document.removeEventListener('touchmove', handleResize);
+            document.removeEventListener('touchend', stopResize);
+            
+            // Save the height preference
+            const currentHeight = this.editorElement.offsetHeight;
+            Utils.saveToStorage(`editor-height-${this.type}`, currentHeight);
+        };
+
+        // Mouse events
+        resizeHandle.addEventListener('mousedown', startResize);
+        
+        // Touch events for mobile  
+        resizeHandle.addEventListener('touchstart', startResize, { passive: false });
+
+        // Load saved height preference
+        const savedHeight = Utils.loadFromStorage(`editor-height-${this.type}`, 256);
+        const resizeHandleHeight = 12;
+        if (savedHeight && savedHeight >= 256 && savedHeight <= 608) {
+            this.editorElement.style.height = savedHeight + 'px';
+            container.style.height = (savedHeight + resizeHandleHeight) + 'px';
         }
     }
 
@@ -413,11 +504,87 @@ class PlanPanel {
             previewMode.classList.remove('hidden');
             previewToggleBtn.classList.add('active');
             this.updatePreview();
+            
+            // Setup resize handle for preview mode
+            this.setupPreviewResizeHandle();
         } else {
             editMode.classList.remove('hidden');
             previewMode.classList.add('hidden');
             previewToggleBtn.classList.remove('active');
         }
+    }
+
+    /**
+     * Setup vertical resize handle for preview mode
+     */
+    setupPreviewResizeHandle() {
+        const previewMode = this.panelElement.querySelector('.preview-mode');
+        const resizeHandle = previewMode.querySelector('.vertical-resize-handle');
+        const container = previewMode.querySelector('.markdown-editor-container');
+        const previewElement = previewMode.querySelector('.markdown-preview');
+        
+        if (!resizeHandle || !container || !previewElement) return;
+
+        let isResizing = false;
+        let startY = 0;
+        let startHeight = 0;
+
+        const startResize = (e) => {
+            isResizing = true;
+            startY = e.clientY || e.touches[0].clientY;
+            startHeight = previewElement.offsetHeight;
+            
+            resizeHandle.classList.add('dragging');
+            document.body.style.cursor = 'ns-resize';
+            document.body.style.userSelect = 'none';
+            
+            e.preventDefault();
+            
+            document.addEventListener('mousemove', handleResize);
+            document.addEventListener('mouseup', stopResize);
+            document.addEventListener('touchmove', handleResize, { passive: false });
+            document.addEventListener('touchend', stopResize);
+        };
+
+        const handleResize = (e) => {
+            if (!isResizing) return;
+            
+            e.preventDefault();
+            const currentY = e.clientY || e.touches[0].clientY;
+            const deltaY = currentY - startY;
+            const newHeight = Math.max(256, Math.min(608, startHeight + deltaY));
+            const resizeHandleHeight = 12;
+            
+            previewElement.style.height = newHeight + 'px';
+            container.style.height = (newHeight + resizeHandleHeight) + 'px';
+        };
+
+        const stopResize = () => {
+            if (!isResizing) return;
+            
+            isResizing = false;
+            resizeHandle.classList.remove('dragging');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            
+            document.removeEventListener('mousemove', handleResize);
+            document.removeEventListener('mouseup', stopResize);
+            document.removeEventListener('touchmove', handleResize);
+            document.removeEventListener('touchend', stopResize);
+            
+            // Sync the editor height with preview height
+            const currentHeight = previewElement.offsetHeight;
+            this.editorElement.style.height = currentHeight + 'px';
+            Utils.saveToStorage(`editor-height-${this.type}`, currentHeight);
+        };
+
+        // Remove existing listeners to prevent duplicates
+        resizeHandle.removeEventListener('mousedown', startResize);
+        resizeHandle.removeEventListener('touchstart', startResize);
+        
+        // Add new listeners
+        resizeHandle.addEventListener('mousedown', startResize);
+        resizeHandle.addEventListener('touchstart', startResize, { passive: false });
     }
 
     /**
@@ -427,6 +594,10 @@ class PlanPanel {
         const content = this.editorElement.value;
         const html = marked.parse(content);
         this.previewElement.innerHTML = html;
+        
+        // Sync preview height with editor height
+        const editorHeight = this.editorElement.offsetHeight;
+        this.previewElement.style.minHeight = editorHeight + 'px';
     }
 
     /**
