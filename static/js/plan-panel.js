@@ -122,7 +122,7 @@ class PlanPanel {
                 <div class="edit-mode">
                     <div class="markdown-editor-container">
                         <textarea 
-                            class="markdown-editor w-full h-64 p-3 border-0 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="markdown-editor focus:ring-2 focus:ring-blue-500"
                             placeholder="輸入 Markdown 內容..."
                         ></textarea>
                     </div>
@@ -194,6 +194,9 @@ class PlanPanel {
         this.editorElement.addEventListener('input', () => {
             this.onContentChange();
         });
+
+        // Handle textarea resize to sync container height
+        this.setupResizeHandler();
 
         // Prevent form submission on Enter in editor
         this.editorElement.addEventListener('keydown', (e) => {
@@ -295,6 +298,51 @@ class PlanPanel {
         // Update preview if in preview mode
         if (this.isPreviewMode) {
             this.updatePreview();
+        }
+    }
+
+    /**
+     * Setup resize handler for textarea and container synchronization
+     */
+    setupResizeHandler() {
+        const container = this.panelElement.querySelector('.markdown-editor-container');
+        
+        // Use ResizeObserver if available, otherwise fall back to mutation observer
+        if (window.ResizeObserver) {
+            const resizeObserver = new ResizeObserver((entries) => {
+                for (let entry of entries) {
+                    if (entry.target === this.editorElement) {
+                        // Sync container height with textarea height
+                        const textareaHeight = entry.contentRect.height + 
+                            parseFloat(getComputedStyle(this.editorElement).paddingTop) + 
+                            parseFloat(getComputedStyle(this.editorElement).paddingBottom);
+                        container.style.height = textareaHeight + 'px';
+                    }
+                }
+            });
+            
+            resizeObserver.observe(this.editorElement);
+            
+            // Store observer for cleanup
+            this.resizeObserver = resizeObserver;
+        } else {
+            // Fallback: polling method
+            this.syncContainerHeight();
+            this.resizeCheckInterval = setInterval(() => {
+                this.syncContainerHeight();
+            }, 100);
+        }
+    }
+
+    /**
+     * Sync container height with textarea height
+     */
+    syncContainerHeight() {
+        const container = this.panelElement.querySelector('.markdown-editor-container');
+        const textareaHeight = this.editorElement.offsetHeight;
+        
+        if (container.offsetHeight !== textareaHeight) {
+            container.style.height = textareaHeight + 'px';
         }
     }
 
@@ -482,6 +530,17 @@ class PlanPanel {
         if (this.autoSaveTimeout) {
             clearTimeout(this.autoSaveTimeout);
         }
+        
+        // Clean up resize observer
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+        }
+        
+        // Clean up resize check interval
+        if (this.resizeCheckInterval) {
+            clearInterval(this.resizeCheckInterval);
+        }
+        
         if (this.panelElement) {
             this.panelElement.remove();
         }
