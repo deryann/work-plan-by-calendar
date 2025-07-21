@@ -26,6 +26,11 @@
     
 </head>
 <body class="bg-gray-100 h-screen overflow-hidden">
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="fixed inset-0 bg-white flex items-center justify-center z-50 transition-opacity duration-1500">
+        <img src="/static/png/work_planner.png" alt="Work Planner" class="max-w-sm max-h-sm">
+    </div>
+
     <!-- Main Container -->
     <div class="flex flex-col h-full">
         <!-- Header -->
@@ -262,6 +267,20 @@
             </div>
         </div>
     </div>
+
+    <!-- Splash Screen Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const splashScreen = document.getElementById('splash-screen');
+            
+            setTimeout(function() {
+                splashScreen.style.opacity = '0';
+                setTimeout(function() {
+                    splashScreen.style.display = 'none';
+                }, 1500); // Wait for fade transition to complete
+            }, 2000); // Show splash for 2 seconds
+        });
+    </script>
 
     <!-- JavaScript Files -->
     <script src="/static/js/utils.js"></script>
