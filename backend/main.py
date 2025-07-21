@@ -1,13 +1,16 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Request
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import date
 from typing import Optional
 import sys
 import os
+from pathlib import Path
 
 # Add the project root to Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+project_root = Path(__file__).parent.parent
+sys.path.append(str(project_root))
 
 from backend.models import (
     Plan, PlanType, PlanCreate, PlanUpdate, AllPlans, 
@@ -30,8 +33,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Mount static files - serve from project root
+static_dir = project_root / "static"
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+# Mount frontend files
+frontend_dir = project_root / "frontend"
+if frontend_dir.exists():
+    app.mount("/frontend", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 
 # Initialize the plan service
 plan_service = PlanService()
@@ -64,7 +74,19 @@ async def value_error_handler(request, exc):
 @app.get("/")
 async def root():
     """Root endpoint serving the frontend application"""
-    return {"message": "Work Plan Calendar API", "version": "1.0.0"}
+    index_path = project_root / "frontend" / "index.html"
+    if index_path.exists():
+        return FileResponse(str(index_path))
+    return {"message": "Work Plan Calendar API", "version": "1.0.0", "error": "Frontend not found"}
+
+
+@app.get("/app")
+async def app_frontend():
+    """Alternative frontend endpoint"""
+    index_path = project_root / "frontend" / "index.html"
+    if index_path.exists():
+        return FileResponse(str(index_path))
+    return {"error": "Frontend not found"}
 
 
 # Plan CRUD endpoints

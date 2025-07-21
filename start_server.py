@@ -29,8 +29,12 @@ def main():
     os.chdir(project_root)
     
     print("🌐 Starting FastAPI server at http://localhost:8000")
-    print("📱 Frontend available at http://localhost:8000/frontend/")
+    print("📱 Frontend available at:")
+    print("   • Main app: http://localhost:8000/")
+    print("   • Alternative: http://localhost:8000/app")
+    print("   • Static frontend: http://localhost:8000/frontend/")
     print("📚 API documentation at http://localhost:8000/docs")
+    print("🗂️  Static files served from: http://localhost:8000/static/")
     print("\n⏹️  Press Ctrl+C to stop the server\n")
     
     # Start the server

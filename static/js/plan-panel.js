@@ -327,14 +327,17 @@ class PlanPanel {
         
         const editMode = this.panelElement.querySelector('.edit-mode');
         const previewMode = this.panelElement.querySelector('.preview-mode');
+        const previewToggleBtn = this.panelElement.querySelector('.preview-toggle-btn');
         
         if (this.isPreviewMode) {
             editMode.classList.add('hidden');
             previewMode.classList.remove('hidden');
+            previewToggleBtn.classList.add('active');
             this.updatePreview();
         } else {
             editMode.classList.remove('hidden');
             previewMode.classList.add('hidden');
+            previewToggleBtn.classList.remove('active');
         }
     }
 
