@@ -268,6 +268,73 @@
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
+/* Circular collapse button styling */
+.circular-collapse-btn {
+    padding: 0.375rem;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    transition-property: all;
+    transition-duration: 300ms;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.circular-collapse-btn:hover {
+    background: rgba(100, 116, 139, 0.1);
+    color: #334155;
+    transform: scale(1.1);
+}
+
+.circular-collapse-btn.collapsed {
+    color: #f59e0b;
+}
+
+.circular-collapse-btn.collapsed:hover {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+/* Circular border styling */
+.collapse-circle {
+    opacity: 0.4;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.circular-collapse-btn:hover .collapse-circle {
+    opacity: 0.8;
+    stroke-width: 2;
+}
+
+.circular-collapse-btn.collapsed .collapse-circle {
+    opacity: 0.6;
+    stroke: #f59e0b;
+}
+
+.circular-collapse-btn.collapsed:hover .collapse-circle {
+    opacity: 1;
+    stroke: #d97706;
+    stroke-width: 2;
+}
+
+/* Chevron animation */
+.collapse-chevron {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+}
+
+/* Subtle glow effect when collapsed */
+.circular-collapse-btn.collapsed {
+    filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.3));
+}
+
+.circular-collapse-btn.collapsed:hover {
+    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
+}
+
 .nav-btn:hover {
     background-color: #f8fafc;
     color: #334155;

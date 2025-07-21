@@ -36,6 +36,7 @@ class PlanPanel {
         this.render();
         this.bindEvents();
         this.loadContent();
+        this.initializeCollapseState();
     }
 
     /**
@@ -53,10 +54,10 @@ class PlanPanel {
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2">
                         <!-- Collapse button -->
-                        <button class="collapse-btn nav-btn" title="摺疊/展開">
-                            <svg class="w-4 h-4 collapse-icon transition-transform duration-200 ${this.isCollapsed ? '-rotate-90' : ''}" 
-                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        <button class="collapse-btn circular-collapse-btn" title="摺疊/展開">
+                            <svg class="w-5 h-5 collapse-icon" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" fill="none" class="collapse-circle"></circle>
+                                <polyline class="collapse-chevron" points="8,10 12,14 16,10" stroke="currentColor" stroke-width="2" fill="none"></polyline>
                             </svg>
                         </button>
                         
@@ -298,24 +299,54 @@ class PlanPanel {
     }
 
     /**
+     * Initialize collapse state based on stored preference
+     */
+    initializeCollapseState() {
+        if (this.isCollapsed) {
+            const collapseBtn = this.panelElement.querySelector('.collapse-btn');
+            const collapseChevron = this.panelElement.querySelector('.collapse-chevron');
+            
+            this.contentElement.classList.add('hidden');
+            this.panelElement.classList.add('panel-collapsed');
+            collapseBtn.classList.add('collapsed');
+            
+            // Set initial collapsed state without animation
+            collapseChevron.style.transition = 'none';
+            collapseChevron.style.transform = 'rotate(180deg)';
+            
+            // Re-enable transitions after a brief delay  
+            setTimeout(() => {
+                collapseChevron.style.transition = '';
+            }, 50);
+        }
+    }
+
+    /**
      * Toggle collapse state
      */
     toggleCollapse() {
         this.isCollapsed = !this.isCollapsed;
         Utils.saveToStorage(`panel-collapsed-${this.type}`, this.isCollapsed);
         
-        const collapseIcon = this.panelElement.querySelector('.collapse-icon');
+        const collapseBtn = this.panelElement.querySelector('.collapse-btn');
+        const collapseChevron = this.panelElement.querySelector('.collapse-chevron');
         
         if (this.isCollapsed) {
             this.contentElement.classList.add('hidden');
             this.panelElement.classList.add('panel-collapsed');
             this.panelElement.classList.remove('panel-expanded');
-            collapseIcon.classList.add('-rotate-90');
+            collapseBtn.classList.add('collapsed');
+            
+            // Rotate chevron up (180 degrees)
+            collapseChevron.style.transform = 'rotate(180deg)';
         } else {
             this.contentElement.classList.remove('hidden');
             this.panelElement.classList.remove('panel-collapsed');
             this.panelElement.classList.add('panel-expanded');
-            collapseIcon.classList.remove('-rotate-90');
+            collapseBtn.classList.remove('collapsed');
+            
+            // Rotate chevron back to down (0 degrees)
+            collapseChevron.style.transform = 'rotate(0deg)';
         }
     }
 
