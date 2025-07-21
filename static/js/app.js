@@ -184,17 +184,16 @@ class WorkPlanApp {
      * Load specific current plan
      */
     async loadCurrentPlan(planType) {
+        let existingPanel = null;
         try {
             const container = document.getElementById(`${planType}-current-panel`);
             if (!container) return;
 
-            // Destroy existing panel
-            if (this.panels.current[planType]) {
-                this.panels.current[planType].destroy();
-            }
+            // Store existing panel before destroying it
+            existingPanel = this.panels.current[planType];
 
             // Create new panel
-            this.panels.current[planType] = new PlanPanel({
+            const newPanel = new PlanPanel({
                 type: planType,
                 date: Utils.getCanonicalDate(planType, this.currentDate),
                 isCurrent: true,
@@ -207,9 +206,21 @@ class WorkPlanApp {
                 }
             });
 
+            // Only destroy the old panel after successful creation
+            if (existingPanel) {
+                existingPanel.destroy();
+            }
+            
+            this.panels.current[planType] = newPanel;
+
         } catch (error) {
             console.error(`Failed to load current ${planType} plan:`, error);
             Utils.showError(`載入當期${planType}計畫失敗: ${error.message}`);
+            
+            // If panel creation failed, keep the existing panel
+            if (existingPanel && this.panels.current[planType] !== existingPanel) {
+                this.panels.current[planType] = existingPanel;
+            }
         }
     }
 
@@ -228,6 +239,7 @@ class WorkPlanApp {
      * Load specific history plan
      */
     async loadHistoryPlan(planType) {
+        let existingPanel = null;
         try {
             const container = document.getElementById(`${planType}-history-panel`);
             if (!container) return;
@@ -235,13 +247,11 @@ class WorkPlanApp {
             // Get previous period date
             const previousDate = Utils.getPreviousPeriod(planType, this.currentDate);
 
-            // Destroy existing panel
-            if (this.panels.history[planType]) {
-                this.panels.history[planType].destroy();
-            }
+            // Store existing panel before destroying it
+            existingPanel = this.panels.history[planType];
 
             // Create new panel
-            this.panels.history[planType] = new PlanPanel({
+            const newPanel = new PlanPanel({
                 type: planType,
                 date: Utils.getCanonicalDate(planType, previousDate),
                 isCurrent: false,
@@ -257,9 +267,21 @@ class WorkPlanApp {
                 }
             });
 
+            // Only destroy the old panel after successful creation
+            if (existingPanel) {
+                existingPanel.destroy();
+            }
+            
+            this.panels.history[planType] = newPanel;
+
         } catch (error) {
             console.error(`Failed to load history ${planType} plan:`, error);
             Utils.showError(`載入歷史${planType}計畫失敗: ${error.message}`);
+            
+            // If panel creation failed, keep the existing panel
+            if (existingPanel && this.panels.history[planType] !== existingPanel) {
+                this.panels.history[planType] = existingPanel;
+            }
         }
     }
 
@@ -307,14 +329,28 @@ class WorkPlanApp {
 
             await planAPI.copyContent(copyRequest);
             
-            // Reload the target panel
-            await this.loadCurrentPlan(planType);
+            // Reload both current and history panels to ensure consistency
+            await Promise.all([
+                this.loadCurrentPlan(planType),
+                this.loadHistoryPlan(planType)
+            ]);
             
             Utils.showSuccess(`${planType}計畫內容已複製到當期`);
             
         } catch (error) {
             console.error('Failed to copy plan content:', error);
             Utils.showError(`複製計畫內容失敗: ${error.message}`);
+            
+            // On error, attempt to reload panels to recover state
+            try {
+                await Promise.all([
+                    this.loadCurrentPlan(planType),
+                    this.loadHistoryPlan(planType)
+                ]);
+            } catch (reloadError) {
+                console.error('Failed to reload panels after copy error:', reloadError);
+                Utils.showError('面板狀態異常，請重新整理頁面');
+            }
         }
     }
 

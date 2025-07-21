@@ -228,7 +228,12 @@ class PlanPanel {
             
             this.content = plan.content || '';
             this.originalContent = this.content;
-            this.editorElement.value = this.content;
+            
+            // Ensure editor element exists before setting value
+            if (this.editorElement) {
+                this.editorElement.value = this.content;
+            }
+            
             this.updateTitle(plan.title);
             this.updateStatus('saved');
             
@@ -239,6 +244,13 @@ class PlanPanel {
             console.error('Failed to load plan content:', error);
             Utils.showError(`載入${this.type}計畫失敗: ${error.message}`);
             this.updateStatus('error');
+            
+            // On error, ensure we don't leave the panel in a broken state
+            this.content = '';
+            this.originalContent = '';
+            if (this.editorElement) {
+                this.editorElement.value = '';
+            }
         } finally {
             Utils.hideLoading();
         }
@@ -653,9 +665,25 @@ class PlanPanel {
                 return;
             }
 
-            // This will trigger the copy functionality
-            this.onCopy(this.type, this.date, content);
-            Utils.showSuccess('內容已複製到當期計畫');
+            // Show loading state
+            const copyBtn = this.panelElement.querySelector('.copy-btn');
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+            copyBtn.disabled = true;
+
+            try {
+                // This will trigger the copy functionality
+                this.onCopy(this.type, this.date, content);
+                // Note: Don't show success message here as it will be handled by onPlanCopied
+            } finally {
+                // Restore button state
+                setTimeout(() => {
+                    if (copyBtn) {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.disabled = false;
+                    }
+                }, 1000);
+            }
         } catch (error) {
             console.error('Failed to copy content:', error);
             Utils.showError(`複製失敗: ${error.message}`);
