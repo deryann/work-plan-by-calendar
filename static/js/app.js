@@ -98,12 +98,28 @@ class WorkPlanApp {
                 return e.returnValue;
             }
         });
+
+        // Initialize hotkeys modal event listeners
+        this.initializeHotkeysModal();
     }
 
     /**
      * Handle global keyboard shortcuts
      */
     handleGlobalKeyboardShortcuts(e) {
+        // Handle Ctrl+Shift+H for hotkeys modal
+        if (e.ctrlKey && e.shiftKey && e.key === 'H') {
+            e.preventDefault();
+            this.toggleHotkeysModal();
+            return;
+        }
+        
+        // Handle Escape key to close hotkeys modal
+        if (e.key === 'Escape') {
+            this.hideHotkeysModal();
+            return;
+        }
+
         if (e.ctrlKey || e.metaKey) {
             switch (e.key) {
                 case 's':
@@ -454,6 +470,67 @@ class WorkPlanApp {
             activePanels: Object.keys(this.panels.current).length + Object.keys(this.panels.history).length,
             layoutInfo: this.layoutManager.getLayoutInfo()
         };
+    }
+
+    /**
+     * Initialize hotkeys modal event listeners
+     */
+    initializeHotkeysModal() {
+        const modal = document.getElementById('hotkeys-modal');
+        const closeBtn = document.getElementById('hotkeys-modal-close');
+        
+        if (!modal || !closeBtn) return;
+
+        // Close button click handler
+        closeBtn.addEventListener('click', () => {
+            this.hideHotkeysModal();
+        });
+
+        // Click outside modal to close
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.hideHotkeysModal();
+            }
+        });
+    }
+
+    /**
+     * Toggle hotkeys modal visibility
+     */
+    toggleHotkeysModal() {
+        const modal = document.getElementById('hotkeys-modal');
+        if (!modal) return;
+
+        if (modal.classList.contains('hidden')) {
+            this.showHotkeysModal();
+        } else {
+            this.hideHotkeysModal();
+        }
+    }
+
+    /**
+     * Show hotkeys modal
+     */
+    showHotkeysModal() {
+        const modal = document.getElementById('hotkeys-modal');
+        if (!modal) return;
+
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+        
+        // Focus on the modal for accessibility
+        modal.focus();
+    }
+
+    /**
+     * Hide hotkeys modal
+     */
+    hideHotkeysModal() {
+        const modal = document.getElementById('hotkeys-modal');
+        if (!modal) return;
+
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
     }
 }
 

@@ -156,6 +156,113 @@
         </div>
     </div>
 
+    <!-- Hotkeys Help Modal -->
+    <div id="hotkeys-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hotkeys-modal-backdrop flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 hotkeys-modal-content">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-800">快捷鍵說明</h3>
+                <button id="hotkeys-modal-close" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Modal Content -->
+            <div class="px-6 py-4 max-h-96 overflow-y-auto custom-scrollbar">
+                <div class="space-y-4">
+                    <!-- General Shortcuts -->
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-700 mb-2">一般操作</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center justify-between hotkey-item">
+                                <span class="hotkey-label">顯示/隱藏快捷鍵說明</span>
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs hotkey-key">Ctrl+Shift+H</span>
+                            </div>
+                            <div class="flex items-center justify-between hotkey-item">
+                                <span class="hotkey-label">儲存所有變更</span>
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs hotkey-key">Ctrl+S</span>
+                            </div>
+                            <div class="flex items-center justify-between hotkey-item">
+                                <span class="hotkey-label">切換左側面板</span>
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs hotkey-key">Ctrl+\</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Shortcuts -->
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-700 mb-2">日期導航</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center justify-between hotkey-item">
+                                <span class="hotkey-label">前一天</span>
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs hotkey-key">Ctrl+Alt+←</span>
+                            </div>
+                            <div class="flex items-center justify-between hotkey-item">
+                                <span class="hotkey-label">後一天</span>
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs hotkey-key">Ctrl+Alt+→</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Editor Shortcuts -->
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-700 mb-2">編輯器</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center justify-between hotkey-item">
+                                <span class="hotkey-label">快速儲存</span>
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs hotkey-key">Ctrl+S</span>
+                            </div>
+                            <div class="flex items-center justify-between hotkey-item">
+                                <span class="hotkey-label">插入標題</span>
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs hotkey-key">Ctrl+H</span>
+                            </div>
+                            <div class="flex items-center justify-between hotkey-item">
+                                <span class="hotkey-label">插入粗體</span>
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs hotkey-key">Ctrl+B</span>
+                            </div>
+                            <div class="flex items-center justify-between hotkey-item">
+                                <span class="hotkey-label">插入斜體</span>
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs hotkey-key">Ctrl+I</span>
+                            </div>
+                            <div class="flex items-center justify-between hotkey-item">
+                                <span class="hotkey-label">插入連結</span>
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs hotkey-key">Ctrl+K</span>
+                            </div>
+                            <div class="flex items-center justify-between hotkey-item">
+                                <span class="hotkey-label">插入清單</span>
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs hotkey-key">Ctrl+L</span>
+                            </div>
+                            <div class="flex items-center justify-between hotkey-item">
+                                <span class="hotkey-label">插入程式碼區塊</span>
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs hotkey-key">Ctrl+`</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Shortcuts -->
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-700 mb-2">面板操作</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center justify-between hotkey-item">
+                                <span class="hotkey-label">切換編輯/預覽模式</span>
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs hotkey-key">Tab</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+                <div class="text-xs text-gray-500 text-center">
+                    按 <span class="px-1 bg-gray-200 rounded font-mono">Esc</span> 或點擊外部區域關閉此視窗
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript Files -->
     <script src="/static/js/utils.js"></script>
     <script src="/static/js/api.js"></script>
