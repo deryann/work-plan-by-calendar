@@ -132,7 +132,7 @@ class PlanPanel {
                 <!-- Preview mode -->
                 <div class="preview-mode hidden">
                     <div class="markdown-editor-container">
-                        <div class="markdown-preview prose max-w-none p-3 bg-gray-50 rounded-t" style="height: 16rem; min-height: 16rem; max-height: 38rem; flex: none;"></div>
+                        <div class="markdown-preview prose max-w-none p-3 bg-gray-50 rounded-t" style="min-height: 6rem;"></div>
                         <div class="vertical-resize-handle" title="拖拉調整高度"></div>
                     </div>
                 </div>
@@ -397,7 +397,7 @@ class PlanPanel {
             e.preventDefault();
             const currentY = e.clientY || e.touches[0].clientY;
             const deltaY = currentY - startY;
-            const newHeight = Math.max(256, Math.min(608, startHeight + deltaY)); // 16rem to 38rem in px
+            const newHeight = Math.max(96, startHeight + deltaY); // Minimum 6rem, no maximum
             const resizeHandleHeight = 12; // Match CSS height
             
             this.editorElement.style.height = newHeight + 'px';
@@ -429,9 +429,9 @@ class PlanPanel {
         resizeHandle.addEventListener('touchstart', startResize, { passive: false });
 
         // Load saved height preference
-        const savedHeight = Utils.loadFromStorage(`editor-height-${this.type}`, 256);
+        const savedHeight = Utils.loadFromStorage(`editor-height-${this.type}`, 96);
         const resizeHandleHeight = 12;
-        if (savedHeight && savedHeight >= 256 && savedHeight <= 608) {
+        if (savedHeight && savedHeight >= 96) {
             this.editorElement.style.height = savedHeight + 'px';
             container.style.height = (savedHeight + resizeHandleHeight) + 'px';
         }
@@ -552,7 +552,7 @@ class PlanPanel {
             e.preventDefault();
             const currentY = e.clientY || e.touches[0].clientY;
             const deltaY = currentY - startY;
-            const newHeight = Math.max(256, Math.min(608, startHeight + deltaY));
+            const newHeight = Math.max(96, startHeight + deltaY); // Minimum 6rem, no maximum
             const resizeHandleHeight = 12;
             
             previewElement.style.height = newHeight + 'px';

@@ -117,26 +117,23 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: calc(16rem + 12px); /* Initial height */
-    min-height: calc(16rem + 12px);
-    max-height: calc(38rem + 12px);
+    /* Removed height restrictions to allow full content display */
 }
 
 .markdown-editor {
     width: 100%;
-    height: 16rem; /* Set initial height */
-    min-height: 16rem;
-    max-height: 38rem;
+    /* Removed height restrictions to allow content-based sizing */
+    min-height: 6rem; /* Minimal height for usability */
     padding: 0.75rem;
     border: none;
     outline: none;
-    resize: none; /* Disable default resize, we'll add custom handle */
+    resize: vertical; /* Allow vertical resize */
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 0.875rem;
     line-height: 1.5;
     background-color: white;
     display: block;
-    flex: none; /* Don't use flex sizing, use fixed height */
+    /* Allow flexible sizing based on content */
 }
 
 /* Custom vertical resize handle */
