@@ -241,3 +241,4 @@ static/css/output.css
 *.sqlite3
 
 data/
+reference_code/
