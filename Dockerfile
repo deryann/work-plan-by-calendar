@@ -56,6 +56,7 @@ RUN echo "PROJECT_NAME: ${PROJECT_NAME}" && \
 COPY backend/ ./backend/
 COPY frontend/ ./frontend/
 COPY static/ ./static/
+COPY snapshot/ ./snapshot/
 COPY start_server.py .
 COPY generate_test_data.py .
 
