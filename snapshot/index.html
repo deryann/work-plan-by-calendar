@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工作計畫日曆系統 - 截圖展示</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .screenshot-img {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .screenshot-img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">工作計畫日曆系統</h1>
+            <h2 class="text-2xl text-gray-600 mb-4">截圖展示</h2>
+            <p class="text-gray-500 max-w-2xl mx-auto">
+                這裡展示了工作計畫日曆系統的各種功能截圖，包括不同的面板顯示狀態和設定頁面。
+                所有截圖都是使用 Google Chrome Headless 模式在 1920x1080 解析度下自動生成。
+            </p>
+            <div class="mt-6 flex justify-center space-x-4">
+                <a href="../" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors">
+                    🏠 回到主應用程式
+                </a>
+                <a href="settings_test.html" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors">
+                    ⚙️ 設定測試頁面
+                </a>
+            </div>
+        </header>
+
+        <!-- Screenshot Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- 01_default_all_visible.png -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">預設狀態 - 全部面板顯示</h3>
+                    <p class="text-gray-600 text-sm mb-4">
+                        應用程式的預設狀態，左右兩側的年、月、週、日計畫面板全部顯示。
+                        這是使用者第一次開啟應用程式時看到的畫面。
+                    </p>
+                </div>
+                <img src="01_default_all_visible.png" alt="預設狀態 - 全部面板顯示" 
+                     class="screenshot-img w-full h-auto cursor-pointer" 
+                     onclick="openModal('01_default_all_visible.png', '預設狀態 - 全部面板顯示')">
+                <div class="p-4 bg-gray-50">
+                    <span class="text-xs text-gray-500">檔案大小: 207KB</span>
+                </div>
+            </div>
+
+            <!-- 02_settings_test_page.png -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">設定測試頁面</h3>
+                    <p class="text-gray-600 text-sm mb-4">
+                        專門設計的設定測試頁面，提供多種預設的面板顯示組合，
+                        讓使用者可以一鍵切換不同狀態。
+                    </p>
+                </div>
+                <img src="02_settings_test_page.png" alt="設定測試頁面" 
+                     class="screenshot-img w-full h-auto cursor-pointer" 
+                     onclick="openModal('02_settings_test_page.png', '設定測試頁面')">
+                <div class="p-4 bg-gray-50">
+                    <span class="text-xs text-gray-500">檔案大小: 12KB</span>
+                </div>
+            </div>
+
+            <!-- 03_minimal_display.png -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">最小化顯示 - 只顯示週日計畫</h3>
+                    <p class="text-gray-600 text-sm mb-4">
+                        最小化的面板顯示模式，只保留左右兩側的週計畫和日計畫，
+                        隱藏年計畫和月計畫，適合專注於短期規劃。
+                    </p>
+                </div>
+                <img src="03_minimal_display.png" alt="最小化顯示 - 只顯示週日計畫" 
+                     class="screenshot-img w-full h-auto cursor-pointer" 
+                     onclick="openModal('03_minimal_display.png', '最小化顯示 - 只顯示週日計畫')">
+                <div class="p-4 bg-gray-50">
+                    <span class="text-xs text-gray-500">檔案大小: 113KB</span>
+                </div>
+            </div>
+
+            <!-- 04_current_only.png -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">僅顯示當期面板</h3>
+                    <p class="text-gray-600 text-sm mb-4">
+                        只顯示右側的當期計畫面板，隱藏左側的歷史計畫面板。
+                        適合專注於當前時期的計畫制定和編輯。
+                    </p>
+                </div>
+                <img src="04_current_only.png" alt="僅顯示當期面板" 
+                     class="screenshot-img w-full h-auto cursor-pointer" 
+                     onclick="openModal('04_current_only.png', '僅顯示當期面板')">
+                <div class="p-4 bg-gray-50">
+                    <span class="text-xs text-gray-500">檔案大小: 141KB</span>
+                </div>
+            </div>
+
+            <!-- 05_history_only.png -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">僅顯示歷史面板</h3>
+                    <p class="text-gray-600 text-sm mb-4">
+                        只顯示左側的歷史計畫面板，隱藏右側的當期計畫面板。
+                        適合回顾和查看過往的計畫執行情況。
+                    </p>
+                </div>
+                <img src="05_history_only.png" alt="僅顯示歷史面板" 
+                     class="screenshot-img w-full h-auto cursor-pointer" 
+                     onclick="openModal('05_history_only.png', '僅顯示歷史面板')">
+                <div class="p-4 bg-gray-50">
+                    <span class="text-xs text-gray-500">檔案大小: 152KB</span>
+                </div>
+            </div>
+
+            <!-- 06_year_month_only.png -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">只顯示年月計畫</h3>
+                    <p class="text-gray-600 text-sm mb-4">
+                        只保留年計畫和月計畫面板，隱藏週計畫和日計畫。
+                        適合進行長期規劃和策略制定。
+                    </p>
+                </div>
+                <img src="06_year_month_only.png" alt="只顯示年月計畫" 
+                     class="screenshot-img w-full h-auto cursor-pointer" 
+                     onclick="openModal('06_year_month_only.png', '只顯示年月計畫')">
+                <div class="p-4 bg-gray-50">
+                    <span class="text-xs text-gray-500">檔案大小: 124KB</span>
+                </div>
+            </div>
+
+            <!-- 07_left_minimal_right_full.png -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">左側最小，右側全顯示</h3>
+                    <p class="text-gray-600 text-sm mb-4">
+                        左側歷史面板只保留日計畫，右側當期面板全部顯示。
+                        這種配置適合需要參考昨日計畫但專注當期規劃的場景。
+                    </p>
+                </div>
+                <img src="07_left_minimal_right_full.png" alt="左側最小，右側全顯示" 
+                     class="screenshot-img w-full h-auto cursor-pointer" 
+                     onclick="openModal('07_left_minimal_right_full.png', '左側最小，右側全顯示')">
+                <div class="p-4 bg-gray-50">
+                    <span class="text-xs text-gray-500">檔案大小: 155KB</span>
+                </div>
+            </div>
+
+            <!-- 08_enhanced_settings_page.png -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">增強版設定頁面</h3>
+                    <p class="text-gray-600 text-sm mb-4">
+                        功能豐富的設定頁面，提供8種預設的面板組合和即時狀態顯示，
+                        讓使用者可以輕鬆管理面板顯示設定。
+                    </p>
+                </div>
+                <img src="08_enhanced_settings_page.png" alt="增強版設定頁面" 
+                     class="screenshot-img w-full h-auto cursor-pointer" 
+                     onclick="openModal('08_enhanced_settings_page.png', '增強版設定頁面')">
+                <div class="p-4 bg-gray-50">
+                    <span class="text-xs text-gray-500">檔案大小: 12KB</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Additional Info -->
+        <div class="mt-12 bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-xl font-semibold mb-4 text-gray-800">手動截圖建議</h3>
+            <p class="text-gray-600 mb-4">
+                以下功能由於需要使用者互動，無法透過自動化腳本截圖，建議手動拍攝：
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-gray-800 mb-2">設定 Modal 開啟狀態</h4>
+                    <p class="text-sm text-gray-600">點擊右上角設定按鈕 ⚙️ 後的彈出視窗</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-gray-800 mb-2">設定選項修改過程</h4>
+                    <p class="text-sm text-gray-600">在設定 Modal 中勾選/取消勾選選項的過程</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-gray-800 mb-2">設定儲存成功訊息</h4>
+                    <p class="text-sm text-gray-600">點擊儲存後出現的綠色成功提示訊息</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-gray-800 mb-2">快捷鍵說明 Modal</h4>
+                    <p class="text-sm text-gray-600">按 Ctrl+Shift+H 開啟的快捷鍵說明視窗</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-gray-800 mb-2">面板編輯模式</h4>
+                    <p class="text-sm text-gray-600">點擊任一面板進入編輯狀態的界面</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-gray-800 mb-2">重新整理後狀態保持</h4>
+                    <p class="text-sm text-gray-600">設定面板狀態後按 F5 重新整理的效果</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Info -->
+        <div class="mt-8 bg-blue-50 rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-4 text-blue-800">技術資訊</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                    <strong class="text-blue-800">解析度:</strong><br>
+                    <span class="text-blue-600">1920 × 1080</span>
+                </div>
+                <div>
+                    <strong class="text-blue-800">格式:</strong><br>
+                    <span class="text-blue-600">PNG</span>
+                </div>
+                <div>
+                    <strong class="text-blue-800">瀏覽器:</strong><br>
+                    <span class="text-blue-600">Google Chrome Headless</span>
+                </div>
+                <div>
+                    <strong class="text-blue-800">總計:</strong><br>
+                    <span class="text-blue-600">9 張截圖</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>工作計畫日曆系統 - 自動截圖展示頁面</p>
+            <p class="mt-2">生成時間: 2025-07-22 23:16:01</p>
+        </footer>
+    </div>
+
+    <!-- Modal for full-size image -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="max-w-7xl max-h-full p-4">
+            <div class="relative">
+                <img id="modalImage" src="" alt="" class="max-w-full max-h-full object-contain">
+                <button onclick="closeModal()" 
+                        class="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition-colors">
+                    ×
+                </button>
+                <div id="modalCaption" class="absolute bottom-4 left-4 text-white bg-black bg-opacity-50 px-4 py-2 rounded"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(imageSrc, caption) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalCaption = document.getElementById('modalCaption');
+            
+            modalImage.src = imageSrc;
+            modalImage.alt = caption;
+            modalCaption.textContent = caption;
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+        }
+
+        // Close modal when clicking outside the image
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

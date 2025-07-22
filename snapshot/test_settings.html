@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>設定測試頁面</title>
+    <script>
+        async function applySettings(settings) {
+            try {
+                const response = await fetch('/api/settings/ui', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+                if (response.ok) {
+                    console.log('Settings applied:', settings);
+                    // 重新載入主頁面來顯示效果
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error('Error applying settings:', error);
+            }
+        }
+
+        // 測試不同的設定組合
+        const testConfigs = {
+            all_visible: {
+                panels: {
+                    left: { year: true, month: true, week: true, day: true },
+                    right: { year: true, month: true, week: true, day: true }
+                }
+            },
+            minimal: {
+                panels: {
+                    left: { year: false, month: false, week: true, day: true },
+                    right: { year: false, month: false, week: true, day: true }
+                }
+            },
+            only_current: {
+                panels: {
+                    left: { year: false, month: false, week: false, day: true },
+                    right: { year: true, month: true, week: true, day: true }
+                }
+            }
+        };
+
+        function setConfig(name) {
+            applySettings(testConfigs[name]);
+        }
+    </script>
+</head>
+<body>
+    <h1>設定測試頁面</h1>
+    <p>點擊以下按鈕套用不同的設定，然後截圖：</p>
+    <button onclick="setConfig('all_visible')">全部顯示</button>
+    <button onclick="setConfig('minimal')">最小顯示</button>
+    <button onclick="setConfig('only_current')">僅當期</button>
+    <p><a href="/">回到主頁面</a></p>
+</body>
+</html>
