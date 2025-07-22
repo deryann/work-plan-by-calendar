@@ -35,6 +35,7 @@ def main():
     print("   • Static frontend: http://localhost:8000/frontend/")
     print("📚 API documentation at http://localhost:8000/docs")
     print("🗂️  Static files served from: http://localhost:8000/static/")
+    print("📸 Screenshots gallery at: http://localhost:8000/snapshot/")
     print("\n⏹️  Press Ctrl+C to stop the server\n")
     
     # Start the server

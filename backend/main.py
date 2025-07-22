@@ -44,6 +44,11 @@ frontend_dir = project_root / "frontend"
 if frontend_dir.exists():
     app.mount("/frontend", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 
+# Mount snapshot files - serve screenshot documentation
+snapshot_dir = project_root / "snapshot"
+if snapshot_dir.exists():
+    app.mount("/snapshot", StaticFiles(directory=str(snapshot_dir), html=True), name="snapshot")
+
 # Initialize services
 plan_service = PlanService()
 settings_service = SettingsService()
