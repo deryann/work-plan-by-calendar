@@ -159,6 +159,56 @@ class PlanAPI {
     }
 
     /**
+     * Get all settings
+     * @returns {Promise<object>} Settings object
+     */
+    async getSettings() {
+        return await this.request('/settings');
+    }
+
+    /**
+     * Get UI settings
+     * @returns {Promise<object>} UI settings object
+     */
+    async getUISettings() {
+        return await this.request('/settings/ui');
+    }
+
+    /**
+     * Update settings
+     * @param {object} settings - Settings object
+     * @returns {Promise<object>} Updated settings
+     */
+    async updateSettings(settings) {
+        return await this.request('/settings', {
+            method: 'PUT',
+            body: JSON.stringify(settings)
+        });
+    }
+
+    /**
+     * Update UI settings
+     * @param {object} uiSettings - UI settings object
+     * @returns {Promise<object>} Updated settings
+     */
+    async updateUISettings(uiSettings) {
+        return await this.request('/settings/ui', {
+            method: 'PUT',
+            body: JSON.stringify(uiSettings)
+        });
+    }
+
+    /**
+     * Reset settings to defaults
+     * @returns {Promise<object>} Default settings
+     */
+    async resetSettings() {
+        return await this.request('/settings/reset', {
+            method: 'POST'
+        });
+    }
+
+    /**
      * Health check
      * @returns {Promise<object>} Health status
      */

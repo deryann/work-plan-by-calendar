@@ -14,9 +14,10 @@ sys.path.append(str(project_root))
 
 from backend.models import (
     Plan, PlanType, PlanCreate, PlanUpdate, AllPlans, 
-    CopyRequest, ErrorResponse
+    CopyRequest, ErrorResponse, Settings, UISettings, SettingsUpdate
 )
 from backend.plan_service import PlanService
+from backend.settings_service import SettingsService
 
 app = FastAPI(
     title="Work Plan Calendar API",
@@ -43,8 +44,9 @@ frontend_dir = project_root / "frontend"
 if frontend_dir.exists():
     app.mount("/frontend", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 
-# Initialize the plan service
+# Initialize services
 plan_service = PlanService()
+settings_service = SettingsService()
 
 
 @app.exception_handler(IOError)
@@ -286,6 +288,92 @@ async def check_plan_exists(plan_type: PlanType, plan_date: date):
                 error="PLAN_CHECK_ERROR",
                 message=f"Failed to check plan existence: {str(e)}",
                 details={"plan_type": plan_type, "date": str(plan_date)}
+            ).dict()
+        )
+
+
+# Settings endpoints
+@app.get("/api/settings", response_model=Settings)
+async def get_settings():
+    """取得所有設定"""
+    try:
+        settings = settings_service.load_settings()
+        return settings
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="SETTINGS_READ_ERROR",
+                message=f"Failed to read settings: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.get("/api/settings/ui", response_model=UISettings)
+async def get_ui_settings():
+    """取得 UI 設定"""
+    try:
+        ui_settings = settings_service.get_ui_settings()
+        return ui_settings
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="UI_SETTINGS_READ_ERROR",
+                message=f"Failed to read UI settings: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.put("/api/settings", response_model=Settings)
+async def update_settings(settings_update: SettingsUpdate):
+    """更新設定"""
+    try:
+        updated_settings = settings_service.update_settings(settings_update)
+        return updated_settings
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="SETTINGS_UPDATE_ERROR",
+                message=f"Failed to update settings: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.put("/api/settings/ui", response_model=Settings)
+async def update_ui_settings(ui_settings: UISettings):
+    """更新 UI 設定"""
+    try:
+        updated_settings = settings_service.update_ui_settings(ui_settings)
+        return updated_settings
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="UI_SETTINGS_UPDATE_ERROR",
+                message=f"Failed to update UI settings: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.post("/api/settings/reset", response_model=Settings)
+async def reset_settings():
+    """重設設定為預設值"""
+    try:
+        default_settings = settings_service.reset_settings()
+        return default_settings
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="SETTINGS_RESET_ERROR",
+                message=f"Failed to reset settings: {str(e)}",
+                details={}
             ).dict()
         )
 

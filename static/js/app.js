@@ -5,6 +5,8 @@ class WorkPlanApp {
         this.currentDate = new Date();
         this.layoutManager = null;
         this.datePicker = null;
+        this.settingsManager = null;
+        this.settingsModal = null;
         this.panels = {
             history: {},
             current: {}
@@ -19,11 +21,19 @@ class WorkPlanApp {
     async init() {
         try {
             await this.checkAPIHealth();
-            this.initializeComponents();
+            await this.initializeComponents();
             this.bindGlobalEvents();
-            this.loadCurrentPlans();
-            this.loadHistoryPlans();
+            await this.loadCurrentPlans();
+            await this.loadHistoryPlans();
             this.updateDateDisplay();
+            
+            // Apply panel visibility settings after all panels are loaded
+            if (this.settingsManager) {
+                // Use setTimeout to ensure DOM is fully rendered
+                setTimeout(() => {
+                    this.settingsManager.applyPanelVisibility();
+                }, 100);
+            }
             
             Utils.showSuccess('應用程式已載入完成');
         } catch (error) {
@@ -46,7 +56,14 @@ class WorkPlanApp {
     /**
      * Initialize components
      */
-    initializeComponents() {
+    async initializeComponents() {
+        // Initialize settings manager first
+        this.settingsManager = new SettingsManager();
+        await this.settingsManager.init();
+
+        // Initialize settings modal
+        this.settingsModal = new SettingsModal(this.settingsManager);
+
         // Initialize layout manager
         this.layoutManager = new LayoutManager();
 
@@ -60,6 +77,13 @@ class WorkPlanApp {
 
         // Setup main date picker
         this.setupMainDatePicker();
+
+        // Listen for settings changes
+        this.settingsManager.onSettingsUpdated((settings) => {
+            console.log('Settings updated:', settings);
+            // Reload panels if needed when settings change
+            this.onSettingsUpdated(settings);
+        });
     }
 
     /**
@@ -531,6 +555,62 @@ class WorkPlanApp {
 
         modal.classList.add('hidden');
         modal.setAttribute('aria-hidden', 'true');
+    }
+
+    /**
+     * Handle settings updates
+     */
+    onSettingsUpdated(settings) {
+        try {
+            // Apply panel visibility immediately
+            this.settingsManager.applyPanelVisibility();
+            
+            // Optionally reload panels that became visible
+            this.reloadVisiblePanels();
+            
+        } catch (error) {
+            console.error('Error applying settings updates:', error);
+            Utils.showError('套用設定時發生錯誤');
+        }
+    }
+
+    /**
+     * Reload panels that are now visible
+     */
+    async reloadVisiblePanels() {
+        const planTypes = ['year', 'month', 'week', 'day'];
+        
+        for (const planType of planTypes) {
+            // Check if left panel is visible and reload if needed
+            if (this.settingsManager.getPanelVisibility('left', planType)) {
+                const leftPanelElement = document.getElementById(`${planType}-history-panel`);
+                if (leftPanelElement && leftPanelElement.style.display !== 'none') {
+                    await this.loadHistoryPlan(planType);
+                }
+            }
+            
+            // Check if right panel is visible and reload if needed
+            if (this.settingsManager.getPanelVisibility('right', planType)) {
+                const rightPanelElement = document.getElementById(`${planType}-current-panel`);
+                if (rightPanelElement && rightPanelElement.style.display !== 'none') {
+                    await this.loadCurrentPlan(planType);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get settings manager instance
+     */
+    getSettingsManager() {
+        return this.settingsManager;
+    }
+
+    /**
+     * Get settings modal instance
+     */
+    getSettingsModal() {
+        return this.settingsModal;
     }
 }
 

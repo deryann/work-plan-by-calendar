@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from enum import Enum
 from pydantic import BaseModel
-from typing import Optional, Dict
+from typing import Optional, Dict, Any
 
 
 class PlanType(str, Enum):
@@ -55,3 +55,26 @@ class ErrorResponse(BaseModel):
     error: str
     message: str
     details: Optional[Dict] = None
+
+
+# Settings models
+class PanelSettings(BaseModel):
+    year: bool = True
+    month: bool = True
+    week: bool = True
+    day: bool = True
+
+
+class UISettings(BaseModel):
+    panels: Dict[str, PanelSettings] = {
+        "left": PanelSettings(),
+        "right": PanelSettings()
+    }
+
+
+class Settings(BaseModel):
+    ui: UISettings = UISettings()
+
+
+class SettingsUpdate(BaseModel):
+    ui: Optional[UISettings] = None

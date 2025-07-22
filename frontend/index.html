@@ -61,6 +61,18 @@
                         </svg>
                     </button>
                     
+                    <!-- Settings Button -->
+                    <button 
+                        id="settings-btn" 
+                        class="nav-btn" 
+                        title="設定"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </button>
+                    
                     <!-- About Button -->
                     <button 
                         id="about-btn" 
@@ -280,6 +292,92 @@
         </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 settings-modal-backdrop flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 settings-modal-content">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-800">應用程式設定</h3>
+                <button id="settings-modal-close" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Modal Content -->
+            <div class="px-6 py-4 max-h-96 overflow-y-auto custom-scrollbar">
+                <div class="space-y-6">
+                    <!-- UI Panel Settings -->
+                    <div>
+                        <h4 class="text-md font-semibold text-gray-700 mb-4">面板顯示設定</h4>
+                        
+                        <!-- Left Panel Settings -->
+                        <div class="mb-4">
+                            <h5 class="text-sm font-medium text-gray-600 mb-2">左側面板 (歷史計畫)</h5>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="left-year-toggle" class="panel-toggle" data-panel="left" data-type="year" checked>
+                                    <span class="ml-2 text-sm text-gray-700">年計畫</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="left-month-toggle" class="panel-toggle" data-panel="left" data-type="month" checked>
+                                    <span class="ml-2 text-sm text-gray-700">月計畫</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="left-week-toggle" class="panel-toggle" data-panel="left" data-type="week" checked>
+                                    <span class="ml-2 text-sm text-gray-700">週計畫</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="left-day-toggle" class="panel-toggle" data-panel="left" data-type="day" checked>
+                                    <span class="ml-2 text-sm text-gray-700">日計畫</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Panel Settings -->
+                        <div class="mb-4">
+                            <h5 class="text-sm font-medium text-gray-600 mb-2">右側面板 (當期計畫)</h5>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="right-year-toggle" class="panel-toggle" data-panel="right" data-type="year" checked>
+                                    <span class="ml-2 text-sm text-gray-700">年計畫</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="right-month-toggle" class="panel-toggle" data-panel="right" data-type="month" checked>
+                                    <span class="ml-2 text-sm text-gray-700">月計畫</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="right-week-toggle" class="panel-toggle" data-panel="right" data-type="week" checked>
+                                    <span class="ml-2 text-sm text-gray-700">週計畫</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="right-day-toggle" class="panel-toggle" data-panel="right" data-type="day" checked>
+                                    <span class="ml-2 text-sm text-gray-700">日計畫</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-between">
+                <button id="settings-reset-btn" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors">
+                    重設為預設值
+                </button>
+                <div class="flex space-x-2">
+                    <button id="settings-cancel-btn" class="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors">
+                        取消
+                    </button>
+                    <button id="settings-save-btn" class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                        儲存設定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Splash Screen Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -302,6 +400,8 @@
     <script src="/static/js/plan-panel.js"></script>
     <script src="/static/js/layout-manager.js"></script>
     <script src="/static/js/about-modal.js"></script>
+    <script src="/static/js/settings-manager.js"></script>
+    <script src="/static/js/settings-modal.js"></script>
     <script src="/static/js/app.js"></script>
 </body>
 </html>
