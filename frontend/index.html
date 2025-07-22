@@ -60,6 +60,18 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
+                    
+                    <!-- About Button -->
+                    <button 
+                        id="about-btn" 
+                        class="nav-btn" 
+                        title="關於此應用程式"
+                        onclick="aboutModal?.show()"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </button>
                 </div>
             </div>
         </header>
@@ -289,6 +301,7 @@
     <script src="/static/js/markdown-editor.js"></script>
     <script src="/static/js/plan-panel.js"></script>
     <script src="/static/js/layout-manager.js"></script>
+    <script src="/static/js/about-modal.js"></script>
     <script src="/static/js/app.js"></script>
 </body>
 </html>

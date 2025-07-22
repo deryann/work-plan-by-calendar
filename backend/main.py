@@ -256,6 +256,22 @@ async def health_check():
     }
 
 
+# Version info endpoint
+@app.get("/api/version")
+async def get_version():
+    """取得版本資訊"""
+    version = os.getenv("IMAGE_TAG", "dev")
+    commit_hash = os.getenv("GIT_COMMIT_HASH", "dev")
+    project_name = os.getenv("PROJECT_NAME", "work-plan-calendar")
+    
+    return {
+        "project_name": project_name,
+        "version": version,
+        "commit_hash": commit_hash,
+        "build_time": os.getenv("BUILD_TIME", "unknown")
+    }
+
+
 # Plan existence check endpoint
 @app.get("/api/plans/{plan_type}/{plan_date}/exists")
 async def check_plan_exists(plan_type: PlanType, plan_date: date):
