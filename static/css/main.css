@@ -250,22 +250,21 @@
 }
 
 /* Panel status indicators */
-.panel-status-saved::before {
-    content: '●';
-    color: #10b981;
-    margin-right: 0.25rem;
+.status-indicator.panel-status-saved {
+    background-color: #10b981 !important;
 }
 
-.panel-status-modified::before {
-    content: '●';
-    color: #f59e0b;
-    margin-right: 0.25rem;
+.status-indicator.panel-status-modified {
+    background-color: #f59e0b !important;
 }
 
-.panel-status-error::before {
-    content: '●';
-    color: #ef4444;
-    margin-right: 0.25rem;
+.status-indicator.panel-status-error {
+    background-color: #ef4444 !important;
+}
+
+.status-indicator.panel-status-loading {
+    background-color: #3b82f6 !important;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* Mobile responsiveness */
@@ -543,22 +542,6 @@
     flex-shrink: 0;
 }
 
-.panel-status-saved .status-indicator {
-    background-color: #10b981;
-}
-
-.panel-status-modified .status-indicator {
-    background-color: #f59e0b;
-}
-
-.panel-status-error .status-indicator {
-    background-color: #ef4444;
-}
-
-.panel-status-loading .status-indicator {
-    background-color: #3b82f6;
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
 
 .panel-title {
     color: #475569;
