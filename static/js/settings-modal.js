@@ -80,6 +80,22 @@ class SettingsModal {
             });
         });
 
+        // Theme mode radio buttons
+        const themeRadios = document.querySelectorAll('.theme-mode-radio');
+        themeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.onThemeModeChange(e);
+            });
+        });
+
+        // Theme toggle button
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                this.toggleTheme();
+            });
+        }
+
         // Click outside to close
         this.modal.addEventListener('click', (e) => {
             if (e.target === this.modal) {
@@ -154,6 +170,7 @@ class SettingsModal {
             
             // Apply the new settings to the UI immediately
             this.settingsManager.applyPanelVisibility();
+            this.settingsManager.applyTheme();
             
             Utils.showSuccess('設定已儲存');
             this.hide();
@@ -184,6 +201,7 @@ class SettingsModal {
             
             // Apply the reset settings to the UI
             this.settingsManager.applyPanelVisibility();
+            this.settingsManager.applyTheme();
             
             Utils.showSuccess('設定已重設為預設值');
             
@@ -201,6 +219,15 @@ class SettingsModal {
     loadCurrentSettings() {
         const settings = this.settingsManager.getSettings();
         const uiSettings = settings.ui;
+
+        // Update theme radio buttons
+        const themeMode = this.settingsManager.getThemeMode();
+        const lightRadio = document.getElementById('theme-light');
+        const darkRadio = document.getElementById('theme-dark');
+        if (lightRadio && darkRadio) {
+            lightRadio.checked = themeMode === 'light';
+            darkRadio.checked = themeMode === 'dark';
+        }
 
         // Update checkboxes based on current settings
         const planTypes = ['year', 'month', 'week', 'day'];
@@ -240,6 +267,50 @@ class SettingsModal {
         this.pendingSettings.ui.panels[panelSide][planType] = isChecked;
 
         console.log(`Panel toggle changed: ${panelSide} ${planType} = ${isChecked}`);
+    }
+
+    /**
+     * Handle theme mode changes
+     */
+    onThemeModeChange(event) {
+        const radio = event.target;
+        const newMode = radio.value;
+
+        // Create or update pending settings
+        if (!this.pendingSettings) {
+            this.pendingSettings = JSON.parse(JSON.stringify(this.settingsManager.getSettings()));
+        }
+
+        // Update the pending theme mode
+        if (!this.pendingSettings.ui.theme) {
+            this.pendingSettings.ui.theme = this.settingsManager.getDefaultSettings().ui.theme;
+        }
+        this.pendingSettings.ui.theme.mode = newMode;
+
+        console.log(`Theme mode changed to: ${newMode}`);
+    }
+
+    /**
+     * Toggle theme instantly (for quick toggle button)
+     */
+    toggleTheme() {
+        const newMode = this.settingsManager.toggleTheme();
+        
+        // Update the radio buttons to reflect the change
+        const lightRadio = document.getElementById('theme-light');
+        const darkRadio = document.getElementById('theme-dark');
+        if (lightRadio && darkRadio) {
+            lightRadio.checked = newMode === 'light';
+            darkRadio.checked = newMode === 'dark';
+        }
+
+        // Update pending settings if modal is open
+        if (!this.pendingSettings) {
+            this.pendingSettings = JSON.parse(JSON.stringify(this.settingsManager.getSettings()));
+        }
+        this.pendingSettings.ui.theme.mode = newMode;
+
+        console.log(`Theme toggled to: ${newMode}`);
     }
 
     /**

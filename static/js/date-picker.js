@@ -56,22 +56,22 @@ class DatePicker {
         // Generate calendar HTML
         this.pickerElement.innerHTML = `
             <div class="date-picker-header flex items-center justify-between mb-4">
-                <button class="prev-month-btn p-1 rounded hover:bg-gray-100" type="button">
+                <button class="prev-month-btn p-1 rounded transition-colors" type="button" style="color: var(--color-text);" onmouseover="this.style.backgroundColor='var(--color-secondary)'" onmouseout="this.style.backgroundColor='transparent'">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
                 </button>
                 
                 <div class="month-year-display flex items-center space-x-2">
-                    <select class="month-select text-sm border rounded px-2 py-1">
+                    <select class="month-select text-sm border rounded px-2 py-1" style="border-color: var(--color-border); background-color: var(--color-primary); color: var(--color-text);">
                         ${this.generateMonthOptions(month)}
                     </select>
-                    <select class="year-select text-sm border rounded px-2 py-1">
+                    <select class="year-select text-sm border rounded px-2 py-1" style="border-color: var(--color-border); background-color: var(--color-primary); color: var(--color-text);">
                         ${this.generateYearOptions(year)}
                     </select>
                 </div>
                 
-                <button class="next-month-btn p-1 rounded hover:bg-gray-100" type="button">
+                <button class="next-month-btn p-1 rounded transition-colors" type="button" style="color: var(--color-text);" onmouseover="this.style.backgroundColor='var(--color-secondary)'" onmouseout="this.style.backgroundColor='transparent'">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>

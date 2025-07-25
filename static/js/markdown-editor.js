@@ -34,29 +34,29 @@ class MarkdownEditor {
                 >${this.content}</textarea>
                 
                 <div class="editor-toolbar absolute top-2 right-2 flex space-x-1 opacity-0 hover:opacity-100 transition-opacity">
-                    <button class="toolbar-btn bold-btn p-1 text-xs bg-gray-100 hover:bg-gray-200 rounded" title="粗體 (Ctrl+B)">
+                    <button class="toolbar-btn bold-btn p-1 text-xs rounded transition-colors" title="粗體 (Ctrl+B)" style="background-color: var(--color-secondary); color: var(--color-text);" onmouseover="this.style.backgroundColor='var(--color-border)'" onmouseout="this.style.backgroundColor='var(--color-secondary)'">
                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M3 4v12h5.5c2.5 0 4.5-1.5 4.5-3.5 0-1.2-.7-2.3-1.8-2.8C12.3 9.2 13 8.2 13 7c0-2-2-3-4.5-3H3zm3 2h2.5c.8 0 1.5.7 1.5 1.5S9.3 9 8.5 9H6V6zm0 5h3c1.1 0 2 .9 2 2s-.9 2-2 2H6v-4z"/>
                         </svg>
                     </button>
                     
-                    <button class="toolbar-btn italic-btn p-1 text-xs bg-gray-100 hover:bg-gray-200 rounded" title="斜體 (Ctrl+I)">
+                    <button class="toolbar-btn italic-btn p-1 text-xs rounded transition-colors" title="斜體 (Ctrl+I)" style="background-color: var(--color-secondary); color: var(--color-text);" onmouseover="this.style.backgroundColor='var(--color-border)'" onmouseout="this.style.backgroundColor='var(--color-secondary)'">
                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M8 4h8v2h-2.5l-2 8H14v2H6v-2h2.5l2-8H8V4z"/>
                         </svg>
                     </button>
                     
-                    <button class="toolbar-btn header-btn p-1 text-xs bg-gray-100 hover:bg-gray-200 rounded" title="標題 (Ctrl+H)">
+                    <button class="toolbar-btn header-btn p-1 text-xs rounded transition-colors" title="標題 (Ctrl+H)" style="background-color: var(--color-secondary); color: var(--color-text);" onmouseover="this.style.backgroundColor='var(--color-border)'" onmouseout="this.style.backgroundColor='var(--color-secondary)'">
                         H
                     </button>
                     
-                    <button class="toolbar-btn list-btn p-1 text-xs bg-gray-100 hover:bg-gray-200 rounded" title="清單 (Ctrl+L)">
+                    <button class="toolbar-btn list-btn p-1 text-xs rounded transition-colors" title="清單 (Ctrl+L)" style="background-color: var(--color-secondary); color: var(--color-text);" onmouseover="this.style.backgroundColor='var(--color-border)'" onmouseout="this.style.backgroundColor='var(--color-secondary)'">
                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M3 4h2v2H3V4zm4 0h10v2H7V4zM3 8h2v2H3V8zm4 0h10v2H7V8zm-4 4h2v2H3v-2zm4 0h10v2H7v-2z"/>
                         </svg>
                     </button>
                     
-                    <button class="toolbar-btn link-btn p-1 text-xs bg-gray-100 hover:bg-gray-200 rounded" title="連結 (Ctrl+K)">
+                    <button class="toolbar-btn link-btn p-1 text-xs rounded transition-colors" title="連結 (Ctrl+K)" style="background-color: var(--color-secondary); color: var(--color-text);" onmouseover="this.style.backgroundColor='var(--color-border)'" onmouseout="this.style.backgroundColor='var(--color-secondary)'">
                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z"/>
                         </svg>

@@ -46,6 +46,29 @@ class SettingsManager {
                         week: true,
                         day: true
                     }
+                },
+                theme: {
+                    mode: 'light', // 'light' or 'dark'
+                    colors: {
+                        light: {
+                            primary: '#ffffff',
+                            secondary: '#f3f4f6',
+                            accent: '#3b82f6',
+                            border: '#e2e8f0',
+                            text: '#374151',
+                            textSecondary: '#64748b',
+                            titleText: '#1f2937'
+                        },
+                        dark: {
+                            primary: '#2d2d2d',
+                            secondary: '#1a1a1a',
+                            accent: '#60a5fa',
+                            border: '#404040',
+                            text: '#e5e5e5',
+                            textSecondary: '#a3a3a3',
+                            titleText: '#ffffff'
+                        }
+                    }
                 }
             }
         };
@@ -261,18 +284,179 @@ class SettingsManager {
     }
 
     /**
+     * Get theme settings
+     */
+    getThemeSettings() {
+        try {
+            const settings = this.getSettings();
+            if (!settings || !settings.ui || !settings.ui.theme) {
+                return this.getDefaultSettings().ui.theme;
+            }
+            return settings.ui.theme;
+        } catch (error) {
+            console.warn('Error getting theme settings, using defaults:', error);
+            return this.getDefaultSettings().ui.theme;
+        }
+    }
+
+    /**
+     * Get current theme mode
+     */
+    getThemeMode() {
+        try {
+            const themeSettings = this.getThemeSettings();
+            return themeSettings.mode || 'light';
+        } catch (error) {
+            console.warn('Error getting theme mode, using light:', error);
+            return 'light';
+        }
+    }
+
+    /**
+     * Set theme mode
+     */
+    setThemeMode(mode) {
+        const settings = this.getSettings();
+        if (!settings.ui.theme) {
+            settings.ui.theme = this.getDefaultSettings().ui.theme;
+        }
+        settings.ui.theme.mode = mode;
+        return settings;
+    }
+
+    /**
+     * Get current theme colors
+     */
+    getCurrentThemeColors() {
+        try {
+            const themeSettings = this.getThemeSettings();
+            const mode = themeSettings.mode || 'light';
+            
+            if (!themeSettings.colors || !themeSettings.colors[mode]) {
+                console.warn(`Theme colors not found for mode ${mode}, using defaults`);
+                const defaultSettings = this.getDefaultSettings();
+                return defaultSettings.ui.theme.colors[mode] || defaultSettings.ui.theme.colors.light;
+            }
+            
+            return themeSettings.colors[mode];
+        } catch (error) {
+            console.warn('Error getting current theme colors, using defaults:', error);
+            const defaultSettings = this.getDefaultSettings();
+            return defaultSettings.ui.theme.colors.light;
+        }
+    }
+
+    /**
+     * Update theme colors
+     */
+    updateThemeColors(mode, colors) {
+        const settings = this.getSettings();
+        if (!settings.ui.theme) {
+            settings.ui.theme = this.getDefaultSettings().ui.theme;
+        }
+        settings.ui.theme.colors[mode] = { ...settings.ui.theme.colors[mode], ...colors };
+        return settings;
+    }
+
+    /**
+     * Apply theme to DOM
+     */
+    applyTheme() {
+        try {
+            // Ensure we have valid settings
+            if (!this.currentSettings) {
+                console.warn('No settings available, using defaults for theme');
+                this.currentSettings = this.getDefaultSettings();
+            }
+
+            const themeColors = this.getCurrentThemeColors();
+            const mode = this.getThemeMode();
+            
+            if (!themeColors) {
+                console.warn('No theme colors available, using default light theme');
+                const defaultSettings = this.getDefaultSettings();
+                const lightColors = defaultSettings.ui.theme.colors.light;
+                
+                // Apply default light theme
+                const root = document.documentElement;
+                root.style.setProperty('--color-primary', lightColors.primary);
+                root.style.setProperty('--color-secondary', lightColors.secondary);
+                root.style.setProperty('--color-accent', lightColors.accent);
+                root.style.setProperty('--color-border', lightColors.border);
+                root.style.setProperty('--color-text', lightColors.text);
+                root.style.setProperty('--color-text-secondary', lightColors.textSecondary);
+                root.style.setProperty('--color-title-text', lightColors.titleText || lightColors.text);
+                
+                document.body.classList.remove('theme-light', 'theme-dark');
+                document.body.classList.add('theme-light');
+                return;
+            }
+            
+            // Apply CSS custom properties
+            const root = document.documentElement;
+            root.style.setProperty('--color-primary', themeColors.primary);
+            root.style.setProperty('--color-secondary', themeColors.secondary);
+            root.style.setProperty('--color-accent', themeColors.accent);
+            root.style.setProperty('--color-border', themeColors.border);
+            root.style.setProperty('--color-text', themeColors.text);
+            root.style.setProperty('--color-text-secondary', themeColors.textSecondary);
+            root.style.setProperty('--color-title-text', themeColors.titleText || themeColors.text);
+            
+            // Apply theme class to body
+            document.body.classList.remove('theme-light', 'theme-dark');
+            document.body.classList.add(`theme-${mode}`);
+            
+            if (window.location.hostname === 'localhost') {
+                console.log(`Applied ${mode} theme:`, themeColors);
+            }
+        } catch (error) {
+            console.error('Error applying theme:', error);
+            // Fallback to safe default
+            document.body.classList.remove('theme-light', 'theme-dark');
+            document.body.classList.add('theme-light');
+        }
+    }
+
+    /**
+     * Toggle theme mode
+     */
+    toggleTheme() {
+        const currentMode = this.getThemeMode();
+        const newMode = currentMode === 'light' ? 'dark' : 'light';
+        const settings = this.setThemeMode(newMode);
+        this.updateSettingsLocally(settings);
+        this.applyTheme();
+        return newMode;
+    }
+
+    /**
      * Merge settings with defaults
      */
     mergeWithDefaults(settings) {
         const defaults = this.getDefaultSettings();
         const merged = JSON.parse(JSON.stringify(defaults));
 
-        if (settings && settings.ui && settings.ui.panels) {
-            if (settings.ui.panels.left) {
-                Object.assign(merged.ui.panels.left, settings.ui.panels.left);
+        if (settings && settings.ui) {
+            if (settings.ui.panels) {
+                if (settings.ui.panels.left) {
+                    Object.assign(merged.ui.panels.left, settings.ui.panels.left);
+                }
+                if (settings.ui.panels.right) {
+                    Object.assign(merged.ui.panels.right, settings.ui.panels.right);
+                }
             }
-            if (settings.ui.panels.right) {
-                Object.assign(merged.ui.panels.right, settings.ui.panels.right);
+            if (settings.ui.theme) {
+                if (settings.ui.theme.mode) {
+                    merged.ui.theme.mode = settings.ui.theme.mode;
+                }
+                if (settings.ui.theme.colors) {
+                    if (settings.ui.theme.colors.light) {
+                        Object.assign(merged.ui.theme.colors.light, settings.ui.theme.colors.light);
+                    }
+                    if (settings.ui.theme.colors.dark) {
+                        Object.assign(merged.ui.theme.colors.dark, settings.ui.theme.colors.dark);
+                    }
+                }
             }
         }
 

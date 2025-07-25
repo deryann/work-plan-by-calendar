@@ -17,12 +17,12 @@ class AboutModal {
 
     createModal() {
         const modalHTML = `
-            <div id="aboutModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 flex items-center justify-center">
-                <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-                    <div class="px-6 py-4 border-b border-gray-200">
+            <div id="aboutModal" class="fixed inset-0 bg-opacity-50 hidden z-50 flex items-center justify-center" style="background-color: rgba(0,0,0,0.5);">
+                <div class="rounded-lg shadow-xl max-w-md w-full mx-4" style="background-color: var(--color-primary);">
+                    <div class="px-6 py-4 border-b" style="border-color: var(--color-border);">
                         <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-medium text-gray-900">關於 Work Planner</h3>
-                            <button id="closeAboutModal" class="text-gray-400 hover:text-gray-600">
+                            <h3 class="text-lg font-medium" style="color: var(--color-text);">關於 Work Planner</h3>
+                            <button id="closeAboutModal" style="color: var(--color-text-secondary);" onmouseover="this.style.color='var(--color-text)'" onmouseout="this.style.color='var(--color-text-secondary)'">
                                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -35,26 +35,26 @@ class AboutModal {
                         </div>
                         <div class="space-y-3">
                             <div class="text-center">
-                                <h4 class="text-xl font-semibold text-gray-800 mb-2">Work Plan Calendar</h4>
-                                <p class="text-gray-600 text-sm">階層式工作計畫管理系統</p>
+                                <h4 class="text-xl font-semibold mb-2" style="color: var(--color-text);">Work Plan Calendar</h4>
+                                <p class="text-sm" style="color: var(--color-text-secondary);">階層式工作計畫管理系統</p>
                             </div>
-                            <div class="border-t pt-3">
+                            <div class="border-t pt-3" style="border-color: var(--color-border);">
                                 <div class="grid grid-cols-2 gap-2 text-sm">
-                                    <div class="text-gray-500">專案名稱:</div>
-                                    <div id="projectName" class="font-medium text-gray-800">載入中...</div>
+                                    <div style="color: var(--color-text-secondary);">專案名稱:</div>
+                                    <div id="projectName" class="font-medium" style="color: var(--color-text);">載入中...</div>
                                     
-                                    <div class="text-gray-500">版本:</div>
-                                    <div id="appVersion" class="font-medium text-gray-800">載入中...</div>
+                                    <div style="color: var(--color-text-secondary);">版本:</div>
+                                    <div id="appVersion" class="font-medium" style="color: var(--color-text);">載入中...</div>
                                     
-                                    <div class="text-gray-500">版本編號:</div>
-                                    <div id="commitHash" class="font-mono text-xs text-gray-600">載入中...</div>
+                                    <div style="color: var(--color-text-secondary);">版本編號:</div>
+                                    <div id="commitHash" class="font-mono text-xs" style="color: var(--color-text-secondary);">載入中...</div>
                                     
-                                    <div class="text-gray-500">建構時間:</div>
-                                    <div id="buildTime" class="text-xs text-gray-600">載入中...</div>
+                                    <div style="color: var(--color-text-secondary);">建構時間:</div>
+                                    <div id="buildTime" class="text-xs" style="color: var(--color-text-secondary);">載入中...</div>
                                 </div>
                             </div>
-                            <div class="border-t pt-3">
-                                <div class="text-xs text-gray-500 text-center">
+                            <div class="border-t pt-3" style="border-color: var(--color-border);">
+                                <div class="text-xs text-center" style="color: var(--color-text-secondary);">
                                     <p>支援 年/月/週/日 階層式計畫管理</p>
                                     <p>快速編輯與預覽 Markdown 格式內容</p>
                                 </div>

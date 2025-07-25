@@ -65,11 +65,46 @@ class PanelSettings(BaseModel):
     day: bool = True
 
 
+class ThemeColors(BaseModel):
+    primary: str = "#ffffff"
+    secondary: str = "#f3f4f6"
+    accent: str = "#3b82f6"
+    border: str = "#e2e8f0"
+    text: str = "#374151"
+    textSecondary: str = "#64748b"
+    titleText: str = "#1f2937"
+
+
+class ThemeSettings(BaseModel):
+    mode: str = "light"  # "light" or "dark"
+    colors: Dict[str, ThemeColors] = {
+        "light": ThemeColors(
+            primary="#ffffff",
+            secondary="#f3f4f6",
+            accent="#3b82f6",
+            border="#e2e8f0",
+            text="#374151",
+            textSecondary="#64748b",
+            titleText="#1f2937"
+        ),
+        "dark": ThemeColors(
+            primary="#2d2d2d",
+            secondary="#1a1a1a",
+            accent="#60a5fa",
+            border="#404040",
+            text="#e5e5e5",
+            textSecondary="#a3a3a3",
+            titleText="#ffffff"
+        )
+    }
+
+
 class UISettings(BaseModel):
     panels: Dict[str, PanelSettings] = {
         "left": PanelSettings(),
         "right": PanelSettings()
     }
+    theme: ThemeSettings = ThemeSettings()
 
 
 class Settings(BaseModel):

@@ -69,7 +69,7 @@ class PlanPanel {
                         </button>
                         
                         <!-- Title -->
-                        <h3 class="panel-title font-semibold text-gray-800 flex items-center">
+                        <h3 class="panel-title font-semibold flex items-center">
                             <span class="status-indicator"></span>
                             <span class="title-text">${Utils.formatPlanTitle(this.type, this.date)}</span>
                         </h3>
@@ -132,7 +132,7 @@ class PlanPanel {
                 <!-- Preview mode -->
                 <div class="preview-mode hidden">
                     <div class="markdown-editor-container">
-                        <div class="markdown-preview prose max-w-none p-3 bg-gray-50 rounded-t" style="min-height: 6rem;"></div>
+                        <div class="markdown-preview prose max-w-none p-3 rounded-t" style="min-height: 6rem;"></div>
                         <div class="vertical-resize-handle" title="拖拉調整高度"></div>
                     </div>
                 </div>
