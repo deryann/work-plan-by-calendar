@@ -27,13 +27,8 @@ class WorkPlanApp {
             await this.loadHistoryPlans();
             this.updateDateDisplay();
             
-            // Apply panel visibility settings after all panels are loaded
-            if (this.settingsManager) {
-                // Use setTimeout to ensure DOM is fully rendered
-                setTimeout(() => {
-                    this.settingsManager.applyPanelVisibility();
-                }, 100);
-            }
+            // Panel visibility is now applied immediately after each panel creation
+            // No need for additional applyPanelVisibility call
             
             Utils.showSuccess('應用程式已載入完成');
         } catch (error) {
@@ -70,8 +65,8 @@ class WorkPlanApp {
         // Initialize date picker
         this.datePicker = new DatePicker({
             currentDate: this.currentDate,
-            onDateSelect: (date) => {
-                this.setCurrentDate(date);
+            onDateSelect: async (date) => {
+                await this.setCurrentDate(date);
             }
         });
 
@@ -93,9 +88,9 @@ class WorkPlanApp {
         const mainDatePicker = document.getElementById('main-date-picker');
         if (mainDatePicker) {
             mainDatePicker.value = Utils.formatDate(this.currentDate);
-            mainDatePicker.addEventListener('change', (e) => {
+            mainDatePicker.addEventListener('change', async (e) => {
                 const newDate = Utils.parseDate(e.target.value);
-                this.setCurrentDate(newDate);
+                await this.setCurrentDate(newDate);
             });
         }
     }
@@ -173,20 +168,23 @@ class WorkPlanApp {
     /**
      * Set current date and reload plans
      */
-    setCurrentDate(date) {
+    async setCurrentDate(date) {
         this.currentDate = new Date(date);
         this.updateDateDisplay();
         this.updateMainDatePicker();
-        this.loadCurrentPlans();
-        this.loadHistoryPlans();
+        await this.loadCurrentPlans();
+        await this.loadHistoryPlans();
+        
+        // Panel visibility is now applied immediately after each panel creation
+        // No need for additional setTimeout delay
     }
 
     /**
      * Navigate date by days
      */
-    navigateDate(days) {
+    async navigateDate(days) {
         const newDate = dayjs(this.currentDate).add(days, 'day').toDate();
-        this.setCurrentDate(newDate);
+        await this.setCurrentDate(newDate);
     }
 
     /**
@@ -253,6 +251,21 @@ class WorkPlanApp {
             
             this.panels.current[planType] = newPanel;
 
+            // Immediately apply visibility settings for this panel
+            if (this.settingsManager) {
+                const visible = this.settingsManager.getPanelVisibility('right', planType);
+                const panelElement = document.getElementById(`${planType}-current-panel`);
+                if (panelElement) {
+                    if (visible) {
+                        panelElement.style.display = '';
+                        panelElement.classList.remove('settings-hidden');
+                    } else {
+                        panelElement.style.display = 'none';
+                        panelElement.classList.add('settings-hidden');
+                    }
+                }
+            }
+
         } catch (error) {
             console.error(`Failed to load current ${planType} plan:`, error);
             Utils.showError(`載入當期${planType}計畫失敗: ${error.message}`);
@@ -313,6 +326,21 @@ class WorkPlanApp {
             }
             
             this.panels.history[planType] = newPanel;
+
+            // Immediately apply visibility settings for this panel
+            if (this.settingsManager) {
+                const visible = this.settingsManager.getPanelVisibility('left', planType);
+                const panelElement = document.getElementById(`${planType}-history-panel`);
+                if (panelElement) {
+                    if (visible) {
+                        panelElement.style.display = '';
+                        panelElement.classList.remove('settings-hidden');
+                    } else {
+                        panelElement.style.display = 'none';
+                        panelElement.classList.add('settings-hidden');
+                    }
+                }
+            }
 
         } catch (error) {
             console.error(`Failed to load history ${planType} plan:`, error);
