@@ -659,8 +659,25 @@ class PlanPanel {
      */
     async copyToCurrentPlan() {
         try {
-            const content = this.editorElement.value;
-            if (!content.trim()) {
+            // Save current content first if modified
+            if (this.isModified) {
+                await this.saveContent();
+            }
+
+            // Get content to copy (either selected text or full content)
+            let contentToCopy;
+            const selectionStart = this.editorElement.selectionStart;
+            const selectionEnd = this.editorElement.selectionEnd;
+            
+            if (selectionStart !== selectionEnd) {
+                // User has selected text, only copy the selected portion
+                contentToCopy = this.editorElement.value.substring(selectionStart, selectionEnd);
+            } else {
+                // No selection, copy all content
+                contentToCopy = this.editorElement.value;
+            }
+
+            if (!contentToCopy.trim()) {
                 Utils.showError('沒有內容可複製');
                 return;
             }
@@ -673,7 +690,7 @@ class PlanPanel {
 
             try {
                 // This will trigger the copy functionality
-                this.onCopy(this.type, this.date, content);
+                this.onCopy(this.type, this.date, contentToCopy);
                 // Note: Don't show success message here as it will be handled by onPlanCopied
             } finally {
                 // Restore button state
