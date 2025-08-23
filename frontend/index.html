@@ -11,10 +11,12 @@
     <!-- Marked.js for Markdown parsing - using stable version -->
     <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
     
-    <!-- Prism.js for syntax highlighting -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+    <!-- Highlight.js for syntax highlighting -->
+    <link id="highlight-theme" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- Mermaid.js for diagram rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
     
     <!-- Day.js for date handling -->
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
@@ -429,6 +431,26 @@
                     splashScreen.style.display = 'none';
                 }, 1500); // Wait for fade transition to complete
             }, 2000); // Show splash for 2 seconds
+        });
+    </script>
+    
+    <!-- Initialize Highlight.js and Mermaid -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Mermaid with theme support
+            if (typeof mermaid !== 'undefined') {
+                mermaid.initialize({
+                    startOnLoad: false,
+                    theme: document.body.classList.contains('theme-dark') ? 'dark' : 'default',
+                    securityLevel: 'loose',
+                    fontFamily: 'system-ui, -apple-system, sans-serif'
+                });
+            }
+            
+            // Initialize Highlight.js
+            if (typeof hljs !== 'undefined') {
+                hljs.highlightAll();
+            }
         });
     </script>
 

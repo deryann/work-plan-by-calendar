@@ -406,6 +406,12 @@ class SettingsManager {
             document.body.classList.remove('theme-light', 'theme-dark');
             document.body.classList.add(`theme-${mode}`);
             
+            // Update Highlight.js theme
+            this.updateHighlightTheme(mode);
+            
+            // Update Mermaid theme
+            this.updateMermaidTheme(mode);
+            
             if (window.location.hostname === 'localhost') {
                 console.log(`Applied ${mode} theme:`, themeColors);
             }
@@ -461,6 +467,108 @@ class SettingsManager {
         }
 
         return merged;
+    }
+    
+    /**
+     * Update Highlight.js theme based on current mode
+     */
+    updateHighlightTheme(mode) {
+        try {
+            const highlightTheme = document.getElementById('highlight-theme');
+            if (highlightTheme) {
+                const themeUrl = mode === 'dark' 
+                    ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css'
+                    : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+                
+                highlightTheme.href = themeUrl;
+                
+                // Trigger re-highlighting of existing code blocks after theme loads
+                highlightTheme.addEventListener('load', () => {
+                    this.rehighlightCodeBlocks();
+                }, { once: true });
+            }
+        } catch (error) {
+            console.warn('Failed to update Highlight.js theme:', error);
+        }
+    }
+    
+    /**
+     * Update Mermaid theme and re-render diagrams
+     */
+    updateMermaidTheme(mode) {
+        try {
+            if (typeof mermaid !== 'undefined') {
+                const theme = mode === 'dark' ? 'dark' : 'default';
+                
+                // Reinitialize mermaid with new theme
+                mermaid.initialize({
+                    startOnLoad: false,
+                    theme: theme,
+                    securityLevel: 'loose',
+                    fontFamily: 'system-ui, -apple-system, sans-serif'
+                });
+                
+                // Re-render all Mermaid diagrams
+                this.rerenderMermaidDiagrams();
+            }
+        } catch (error) {
+            console.warn('Failed to update Mermaid theme:', error);
+        }
+    }
+    
+    /**
+     * Re-highlight all code blocks in the document
+     */
+    rehighlightCodeBlocks() {
+        try {
+            if (typeof hljs !== 'undefined') {
+                // Find all code blocks and re-highlight them
+                const codeBlocks = document.querySelectorAll('pre code.hljs');
+                codeBlocks.forEach(block => {
+                    // Remove existing highlighting classes
+                    block.className = block.className.replace(/hljs-\S+/g, '');
+                    block.classList.add('hljs');
+                    
+                    // Re-apply highlighting
+                    hljs.highlightElement(block);
+                });
+            }
+        } catch (error) {
+            console.warn('Failed to re-highlight code blocks:', error);
+        }
+    }
+    
+    /**
+     * Re-render all Mermaid diagrams with new theme
+     */
+    rerenderMermaidDiagrams() {
+        try {
+            if (typeof mermaid !== 'undefined') {
+                const mermaidElements = document.querySelectorAll('.mermaid');
+                
+                mermaidElements.forEach(async (element) => {
+                    try {
+                        // Get the original mermaid code from a data attribute or reconstruct
+                        const container = element.closest('.mermaid-container');
+                        if (container) {
+                            const originalCode = container.getAttribute('data-mermaid-code');
+                            if (originalCode) {
+                                // Clear current content
+                                element.innerHTML = '';
+                                
+                                // Re-render with new theme
+                                const { svg } = await mermaid.render(element.id + '_graph', originalCode);
+                                element.innerHTML = svg;
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('Failed to re-render Mermaid diagram:', error);
+                    }
+                });
+            }
+        } catch (error) {
+            console.warn('Failed to re-render Mermaid diagrams:', error);
+        }
     }
 }
 

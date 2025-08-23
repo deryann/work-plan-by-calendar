@@ -675,6 +675,119 @@
     }
 }
 
+/* Highlight.js code block styles */
+.markdown-preview pre code.hljs {
+    background: none !important;
+    padding: 0 !important;
+    color: inherit;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.markdown-preview pre {
+    position: relative;
+    background: var(--color-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    overflow: visible;
+}
+
+/* Copy button styles */
+.copy-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.markdown-preview pre:hover .copy-btn {
+    opacity: 1;
+}
+
+.copy-btn:hover {
+    background-color: var(--color-border) !important;
+    color: var(--color-text) !important;
+}
+
+/* Mermaid container styles */
+.mermaid-container {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background-color: var(--color-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    text-align: center;
+    overflow-x: auto;
+}
+
+.mermaid-container .mermaid {
+    background: transparent;
+    margin: 0;
+    padding: 0;
+}
+
+.mermaid-container svg {
+    max-width: 100%;
+    height: auto;
+    background: transparent;
+}
+
+/* Error message styles for Mermaid */
+.error-message {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+/* Theme-specific adjustments for code blocks */
+.theme-dark .markdown-preview pre {
+    background-color: var(--color-secondary);
+    border-color: var(--color-border);
+}
+
+.theme-light .markdown-preview pre {
+    background-color: var(--color-secondary);
+    border-color: var(--color-border);
+}
+
+/* Language label for code blocks */
+.code-language-label {
+    position: absolute;
+    top: 0.5rem;
+    left: 1rem;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Responsive design for code blocks */
+@media (max-width: 768px) {
+    .markdown-preview pre {
+        border-radius: 0.25rem;
+        margin: 0.75rem 0;
+        padding: 0.75rem;
+    }
+    
+    .copy-btn {
+        opacity: 1;
+        position: static;
+        margin: 0.5rem 0 0 0;
+        display: block;
+        width: 100%;
+    }
+    
+    .mermaid-container {
+        margin: 1rem 0;
+        padding: 0.75rem;
+        border-radius: 0.25rem;
+    }
+}
+
 /* Print styles */
 @media print {
     .no-print {
@@ -688,5 +801,14 @@
     .markdown-preview {
         font-size: 12pt;
         line-height: 1.4;
+    }
+    
+    .copy-btn {
+        display: none !important;
+    }
+    
+    .mermaid-container {
+        border: 1px solid #ccc;
+        break-inside: avoid;
     }
 }

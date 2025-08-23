@@ -600,25 +600,57 @@ class PlanPanel {
     }
 
     /**
-     * Update preview content
+     * Update preview content with Highlight.js and Mermaid support
      */
-    updatePreview() {
+    async updatePreview() {
         const content = this.editorElement.value;
         
         try {
             let html = '';
             
-            // Check if marked is available
+            // Configure marked with custom renderer for code blocks
             if (typeof marked !== 'undefined') {
-                // Try different marked API patterns for compatibility
+                const renderer = new marked.Renderer();
+                
+                // Custom code block renderer for Mermaid and syntax highlighting
+                renderer.code = function(code, lang) {
+                    // Generate unique ID for this code block
+                    const id = 'code-' + Math.random().toString(36).substr(2, 9);
+                    
+                    if (lang === 'mermaid') {
+                        // Return Mermaid placeholder that will be processed later
+                        // Store original code for theme switching
+                        return `<div class="mermaid-container" data-mermaid-id="${id}" data-mermaid-code="${this.escapeHtml(code)}">
+                            <div class="mermaid" id="${id}" style="text-align: center;">${code}</div>
+                        </div>`;
+                    } else {
+                        // Return code block for Highlight.js processing
+                        const languageClass = lang ? ` language-${lang}` : '';
+                        return `<pre><code class="hljs${languageClass}" data-lang="${lang || 'plaintext'}">${this.escapeHtml(code)}</code></pre>`;
+                    }
+                };
+                
+                // Helper function to escape HTML
+                renderer.escapeHtml = function(text) {
+                    const div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
+                };
+                
+                // Configure marked options
+                marked.setOptions({
+                    renderer: renderer,
+                    gfm: true,
+                    breaks: true,
+                    pedantic: false,
+                    sanitize: false
+                });
+                
+                // Parse markdown to HTML
                 if (typeof marked.parse === 'function') {
-                    // Modern API
                     html = marked.parse(content);
                 } else if (typeof marked === 'function') {
-                    // Legacy API where marked is directly callable
                     html = marked(content);
-                } else {
-                    throw new Error('marked API not recognized');
                 }
             } else {
                 throw new Error('marked library not loaded');
@@ -629,41 +661,150 @@ class PlanPanel {
                 throw new Error('Invalid HTML output from marked');
             }
             
+            // Set the HTML content
             this.previewElement.innerHTML = html;
+            
+            // Process Mermaid diagrams
+            await this.processMermaidDiagrams();
+            
+            // Apply syntax highlighting
+            this.applySyntaxHighlighting();
             
         } catch (error) {
             console.warn('Markdown parsing failed, using fallback:', error.message);
-            
-            // Simple fallback markdown processing
-            let html = content
-                // Handle headers
-                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-                // Handle bold and italic
-                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-                .replace(/\*(.*)\*/gim, '<em>$1</em>')
-                // Handle code
-                .replace(/`(.*?)`/gim, '<code>$1</code>')
-                // Handle line breaks
-                .replace(/\n\n/g, '</p><p>')
-                .replace(/\n/g, '<br>')
-                // Handle lists - improved version
-                .replace(/^[\s]*-[\s]+(.*$)/gim, '<li>$1</li>')
-                .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-                .replace(/<\/ul>\s*<ul>/g, '');
-                
-            // Wrap in paragraphs
-            if (html && !html.startsWith('<')) {
-                html = '<p>' + html + '</p>';
-            }
-            
-            this.previewElement.innerHTML = html;
+            this.applyFallbackRendering(content);
         }
         
         // Sync preview height with editor height
         const editorHeight = this.editorElement.offsetHeight;
         this.previewElement.style.minHeight = editorHeight + 'px';
+    }
+    
+    /**
+     * Process Mermaid diagrams in the preview
+     */
+    async processMermaidDiagrams() {
+        if (typeof mermaid === 'undefined') {
+            console.warn('Mermaid library not available');
+            return;
+        }
+        
+        const mermaidElements = this.previewElement.querySelectorAll('.mermaid');
+        
+        for (let element of mermaidElements) {
+            try {
+                const graphDefinition = element.textContent.trim();
+                if (graphDefinition) {
+                    // Clear the element
+                    element.innerHTML = '';
+                    
+                    // Render Mermaid diagram
+                    const { svg } = await mermaid.render(element.id + '_graph', graphDefinition);
+                    element.innerHTML = svg;
+                    
+                    // Add container styling
+                    const container = element.closest('.mermaid-container');
+                    if (container) {
+                        container.style.margin = '1rem 0';
+                        container.style.padding = '1rem';
+                        container.style.border = '1px solid var(--color-border)';
+                        container.style.borderRadius = '0.5rem';
+                        container.style.backgroundColor = 'var(--color-secondary)';
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to render Mermaid diagram:', error);
+                element.innerHTML = `<div class="error-message" style="color: #ef4444; padding: 1rem; border: 1px solid #ef4444; border-radius: 0.25rem; background-color: #fef2f2;">
+                    <strong>Mermaid 渲染錯誤:</strong><br>
+                    <code style="font-size: 0.875rem;">${error.message}</code>
+                </div>`;
+            }
+        }
+    }
+    
+    /**
+     * Apply syntax highlighting to code blocks
+     */
+    applySyntaxHighlighting() {
+        if (typeof hljs === 'undefined') {
+            console.warn('Highlight.js library not available');
+            return;
+        }
+        
+        const codeBlocks = this.previewElement.querySelectorAll('pre code');
+        
+        codeBlocks.forEach(block => {
+            try {
+                // Apply highlighting
+                hljs.highlightElement(block);
+                
+                // Add copy button
+                this.addCopyButton(block);
+                
+            } catch (error) {
+                console.warn('Failed to highlight code block:', error);
+            }
+        });
+    }
+    
+    /**
+     * Add copy button to code blocks
+     */
+    addCopyButton(codeBlock) {
+        const pre = codeBlock.parentElement;
+        if (pre && !pre.querySelector('.copy-btn')) {
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn absolute top-2 right-2 px-2 py-1 text-xs rounded transition-colors';
+            copyBtn.style.backgroundColor = 'var(--color-secondary)';
+            copyBtn.style.color = 'var(--color-text-secondary)';
+            copyBtn.style.border = '1px solid var(--color-border)';
+            copyBtn.textContent = '複製';
+            
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(codeBlock.textContent).then(() => {
+                    copyBtn.textContent = '已複製';
+                    setTimeout(() => copyBtn.textContent = '複製', 2000);
+                }).catch(err => {
+                    console.error('Failed to copy code:', err);
+                });
+            });
+            
+            // Make pre element relative for absolute positioning
+            pre.style.position = 'relative';
+            pre.appendChild(copyBtn);
+        }
+    }
+    
+    /**
+     * Fallback rendering when libraries are not available
+     */
+    applyFallbackRendering(content) {
+        let html = content
+            // Handle headers
+            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+            // Handle bold and italic
+            .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+            .replace(/\*(.*)\*/gim, '<em>$1</em>')
+            // Handle inline code
+            .replace(/`(.*?)`/gim, '<code>$1</code>')
+            // Handle code blocks (basic)
+            .replace(/```(\w+)?\n([\s\S]*?)```/gim, '<pre><code>$2</code></pre>')
+            // Handle line breaks
+            .replace(/\n\n/g, '</p><p>')
+            .replace(/\n/g, '<br>')
+            // Handle lists
+            .replace(/^[\s]*-[\s]+(.*$)/gim, '<li>$1</li>')
+            .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+            .replace(/<\/ul>\s*<ul>/g, '');
+            
+        // Wrap in paragraphs if needed
+        if (html && !html.startsWith('<')) {
+            html = '<p>' + html + '</p>';
+        }
+        
+        this.previewElement.innerHTML = html;
     }
 
     /**
