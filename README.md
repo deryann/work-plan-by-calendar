@@ -25,16 +25,41 @@
 - **Marked.js**: Markdown 解析
 - **Day.js**: 日期處理
 
-## 快速開始
+## 開發環境設置
 
-### 1. 安裝依賴
+### 前置需求
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/) (Python 套件管理工具)
+
+### 安裝 uv
 ```bash
-pip install -r requirements.txt
+# 在 macOS 和 Linux 上使用 curl
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 或使用 pip 安裝
+pip install uv
+```
+
+### 1. 建立虛擬環境並安裝依賴
+```bash
+# 同步依賴並建立虛擬環境
+uv sync
+
+# 或者手動建立虛擬環境並安裝依賴
+uv venv
+source .venv/bin/activate  # Linux/macOS
+# 或 .venv\Scripts\activate  # Windows
+uv pip install -e .
 ```
 
 ### 2. 啟動系統
 ```bash
-python3 start_server.py
+# 使用 uv 執行
+uv run python start_server.py
+
+# 或在虛擬環境中執行
+source .venv/bin/activate
+python start_server.py
 ```
 
 ### 3. 訪問應用
@@ -124,12 +149,43 @@ project/
 
 ### 產生測試資料
 ```bash
-python3 generate_test_data.py
+# 使用 uv 執行
+uv run python generate_test_data.py
+
+# 或在虛擬環境中執行
+source .venv/bin/activate
+python generate_test_data.py
 ```
 
 ### 開發模式啟動
 ```bash
+# 使用 uv 執行開發模式
+uv run uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+
+# 或在虛擬環境中執行
+source .venv/bin/activate
 uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### 常用 uv 指令
+```bash
+# 建立虛擬環境
+uv venv
+
+# 安裝套件
+uv add <package_name>
+
+# 安裝開發依賴
+uv add --dev <package_name>
+
+# 執行 Python 腳本
+uv run python script.py
+
+# 同步專案依賴
+uv sync
+
+# 檢查過時的套件
+uv tree
 ```
 
 ### 專案規格

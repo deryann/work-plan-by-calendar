@@ -1,0 +1,21 @@
+[project]
+name = "work-plan-by-calendar"
+version = "0.1.0"
+description = "一個基於日曆時間組織的個人工作計畫管理系統，支援年度、月度、週度、日度四個層級的計畫管理。"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi==0.104.1",
+    "uvicorn[standard]==0.24.0", 
+    "pydantic==2.5.0",
+    "python-multipart==0.0.6"
+]
+
+[project.scripts]
+start = "start_server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
