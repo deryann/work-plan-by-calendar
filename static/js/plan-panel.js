@@ -604,8 +604,62 @@ class PlanPanel {
      */
     updatePreview() {
         const content = this.editorElement.value;
-        const html = marked.parse(content);
-        this.previewElement.innerHTML = html;
+        
+        try {
+            let html = '';
+            
+            // Check if marked is available
+            if (typeof marked !== 'undefined') {
+                // Try different marked API patterns for compatibility
+                if (typeof marked.parse === 'function') {
+                    // Modern API
+                    html = marked.parse(content);
+                } else if (typeof marked === 'function') {
+                    // Legacy API where marked is directly callable
+                    html = marked(content);
+                } else {
+                    throw new Error('marked API not recognized');
+                }
+            } else {
+                throw new Error('marked library not loaded');
+            }
+            
+            // Ensure we have a valid string
+            if (typeof html !== 'string' || html === '[object Object]') {
+                throw new Error('Invalid HTML output from marked');
+            }
+            
+            this.previewElement.innerHTML = html;
+            
+        } catch (error) {
+            console.warn('Markdown parsing failed, using fallback:', error.message);
+            
+            // Simple fallback markdown processing
+            let html = content
+                // Handle headers
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                // Handle bold and italic
+                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                // Handle code
+                .replace(/`(.*?)`/gim, '<code>$1</code>')
+                // Handle line breaks
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>')
+                // Handle lists - improved version
+                .replace(/^[\s]*-[\s]+(.*$)/gim, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+                .replace(/<\/ul>\s*<ul>/g, '');
+                
+            // Wrap in paragraphs
+            if (html && !html.startsWith('<')) {
+                html = '<p>' + html + '</p>';
+            }
+            
+            this.previewElement.innerHTML = html;
+        }
         
         // Sync preview height with editor height
         const editorHeight = this.editorElement.offsetHeight;
