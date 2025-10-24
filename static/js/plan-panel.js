@@ -981,6 +981,9 @@ class PlanPanel {
     bindDoubleClickEvent() {
         const titleElement = this.panelElement.querySelector('.panel-title');
         if (titleElement && this.layoutManager) {
+            // Set initial tooltip
+            titleElement.title = '雙擊以最大化面板';
+            
             titleElement.addEventListener('dblclick', () => {
                 this.toggleMaximize();
             });
@@ -1003,14 +1006,26 @@ class PlanPanel {
      * Perform the maximize/restore toggle operation
      */
     performMaximizeToggle() {
+        const titleElement = this.panelElement.querySelector('.panel-title');
+        
         if (this.isMaximized) {
             // Currently maximized, restore to normal view
             this.layoutManager.restoreNormalView();
             this.isMaximized = false;
+            
+            // Update title tooltip to default
+            if (titleElement) {
+                titleElement.title = '雙擊以最大化面板';
+            }
         } else {
             // Currently normal, maximize this panel
             this.layoutManager.maximizePanel(this.panelElement);
             this.isMaximized = true;
+            
+            // Update title tooltip for maximized state
+            if (titleElement) {
+                titleElement.title = '再次雙擊以恢復正常檢視';
+            }
         }
     }
 }

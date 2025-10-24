@@ -801,6 +801,51 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.panel-maximized .panel-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    position: relative;
+}
+
+.panel-maximized .panel-header .panel-title {
+    color: white !important;
+}
+
+.panel-maximized .panel-header .title-text {
+    color: white !important;
+}
+
+.panel-maximized .panel-header svg {
+    color: white !important;
+}
+
+.panel-maximized .panel-header button {
+    color: white !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.panel-maximized .panel-header button:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.panel-maximized .panel-header::after {
+    content: '雙擊標題恢復';
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    pointer-events: none;
+    opacity: 0.8;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .panel-hidden-by-maximize {
     display: none !important;
 }
