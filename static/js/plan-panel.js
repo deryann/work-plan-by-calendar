@@ -999,7 +999,16 @@ class PlanPanel {
             return;
         }
 
-        this.performMaximizeToggle();
+        // If panel is collapsed, expand it first before maximizing
+        if (this.isCollapsed && !this.isMaximized) {
+            this.toggleCollapse();
+            // Give a brief moment for collapse animation to complete
+            setTimeout(() => {
+                this.performMaximizeToggle();
+            }, 50);
+        } else {
+            this.performMaximizeToggle();
+        }
     }
 
     /**
