@@ -817,33 +817,49 @@
 
 .panel-maximized .panel-header svg {
     color: white !important;
+    stroke: white !important;
 }
 
 .panel-maximized .panel-header button {
     color: white !important;
+    background-color: rgba(255, 255, 255, 0.15) !important;
     border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
 .panel-maximized .panel-header button:hover {
-    background-color: rgba(255, 255, 255, 0.2) !important;
+    background-color: rgba(255, 255, 255, 0.25) !important;
     border-color: rgba(255, 255, 255, 0.5) !important;
 }
 
+.panel-maximized .panel-header .action-btn {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.panel-maximized .panel-header .action-btn:hover {
+    background: rgba(255, 255, 255, 0.35) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.panel-maximized .panel-header .status-indicator {
+    filter: brightness(1.2);
+}
+
 .panel-maximized .panel-header::after {
-    content: '雙擊標題恢復';
     position: absolute;
-    right: 1rem;
+    left: 50%;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translate(-50%, -50%);
     background: rgba(255, 255, 255, 0.2);
     color: white;
-    padding: 0.25rem 0.5rem;
+    padding: 0.25rem 0.75rem;
     border-radius: 0.25rem;
     font-size: 0.75rem;
     font-weight: 500;
     pointer-events: none;
     opacity: 0.8;
     border: 1px solid rgba(255, 255, 255, 0.3);
+    z-index: 1;
 }
 
 .panel-hidden-by-maximize {
