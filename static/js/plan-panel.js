@@ -9,10 +9,12 @@ class PlanPanel {
         this.onSave = options.onSave || (() => {});
         this.onCopy = options.onCopy || (() => {});
         this.onNavigate = options.onNavigate || (() => {});
+        this.layoutManager = options.layoutManager || null; // Reference to LayoutManager
 
         // Panel state
         this.isCollapsed = Utils.loadFromStorage(`panel-collapsed-${this.type}`, false);
         this.isPreviewMode = false;
+        this.isMaximized = false; // Track maximize state
         this.content = '';
         this.originalContent = '';
         this.isModified = false;
@@ -35,6 +37,7 @@ class PlanPanel {
     init() {
         this.render();
         this.bindEvents();
+        this.bindDoubleClickEvent(); // Bind double-click event for maximize toggle
         this.loadContent();
         this.initializeCollapseState();
     }
@@ -970,6 +973,45 @@ class PlanPanel {
     setContent(content) {
         this.editorElement.value = content;
         this.onContentChange();
+    }
+
+    /**
+     * Bind double-click event to panel title for maximize toggle
+     */
+    bindDoubleClickEvent() {
+        const titleElement = this.panelElement.querySelector('.panel-title');
+        if (titleElement && this.layoutManager) {
+            titleElement.addEventListener('dblclick', () => {
+                this.toggleMaximize();
+            });
+        }
+    }
+
+    /**
+     * Toggle maximize state of this panel
+     */
+    toggleMaximize() {
+        if (!this.layoutManager) {
+            console.warn('LayoutManager not available for panel maximize');
+            return;
+        }
+
+        this.performMaximizeToggle();
+    }
+
+    /**
+     * Perform the maximize/restore toggle operation
+     */
+    performMaximizeToggle() {
+        if (this.isMaximized) {
+            // Currently maximized, restore to normal view
+            this.layoutManager.restoreNormalView();
+            this.isMaximized = false;
+        } else {
+            // Currently normal, maximize this panel
+            this.layoutManager.maximizePanel(this.panelElement);
+            this.isMaximized = true;
+        }
     }
 }
 

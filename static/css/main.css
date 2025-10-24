@@ -788,6 +788,37 @@
     }
 }
 
+/* Panel Maximize Feature Styles */
+.panel-maximized {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.panel-hidden-by-maximize {
+    display: none !important;
+}
+
+.panel-title {
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.2s ease;
+}
+
+.panel-title:hover {
+    opacity: 0.8;
+}
+
+.panel-title:active {
+    opacity: 0.6;
+}
+
 /* Print styles */
 @media print {
     .no-print {
