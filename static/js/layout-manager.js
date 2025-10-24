@@ -131,6 +131,12 @@ class LayoutManager {
      * Toggle left panel visibility
      */
     toggleLeftPanel() {
+        // If any panel is maximized, ignore or restore first
+        if (this.isAnyPanelMaximized()) {
+            console.log('Cannot toggle left panel while a panel is maximized');
+            return;
+        }
+        
         this.isLeftPanelCollapsed = !this.isLeftPanelCollapsed;
         
         if (this.isLeftPanelCollapsed) {
