@@ -1,26 +1,26 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 0.0.0 → 1.0.0
-Action: Initial constitution ratification
+Version Change: 1.0.0 → 1.1.0
+Action: Add language standardization principle
 
-Modified Principles: N/A (initial version)
+Modified Principles: N/A
 Added Sections:
-  - I. Code Quality First
-  - II. Testing Standards
-  - III. User Experience Consistency
-  - IV. Performance Requirements
-  - Performance Targets
-  - Development Workflow
-
-Removed Sections: N/A (initial version)
+  - V. Language Standardization (Traditional Chinese requirement)
+  
+Removed Sections: N/A
 
 Templates Status:
-  ✅ plan-template.md - Constitution Check section already generic
-  ✅ spec-template.md - Requirements alignment verified
-  ✅ tasks-template.md - Task categorization supports all principles
+  ✅ plan-template.md - Language requirement comment added
+  ✅ spec-template.md - Language requirement comment added
+  ✅ tasks-template.md - Language requirement comment added
+  ✅ checklist-template.md - Language requirement comment added
+  ✅ README.md - Already in Traditional Chinese
 
-Follow-up TODOs: None
+Follow-up TODOs: 
+  - All future specifications MUST be written in Traditional Chinese (zh-TW)
+  - All future plans MUST be written in Traditional Chinese (zh-TW)
+  - User-facing documentation (README sections) MUST remain in Traditional Chinese
 -->
 
 # Work Plan Calendar System Constitution
@@ -88,6 +88,22 @@ Follow-up TODOs: None
 - No memory leaks: Long-running sessions (8+ hours) MUST not accumulate memory
 
 **Rationale**: A slow planning tool disrupts focus and productivity. Users often switch rapidly between dates and plan types during review sessions. Performance degradation makes the system frustrating to use.
+
+### V. Language Standardization
+
+**All specifications, plans, and user-facing documentation MUST be written in Traditional Chinese (zh-TW).**
+
+- All feature specifications (spec.md files) MUST use Traditional Chinese
+- All implementation plans (plan.md files) MUST use Traditional Chinese
+- All user stories, requirements, and acceptance criteria MUST be in Traditional Chinese
+- User-facing documentation sections in README MUST remain in Traditional Chinese
+- Code comments explaining business logic SHOULD use Traditional Chinese for clarity
+- Technical terms MAY use English where Traditional Chinese equivalents are uncommon (e.g., "API", "JSON", "Markdown")
+- Error messages shown to users MUST be in Traditional Chinese
+- UI labels, buttons, and interface text MUST be in Traditional Chinese
+- Developer-focused content (code, variable names, function names, git commits) MUST use English
+
+**Rationale**: This system is designed for Traditional Chinese-speaking users managing their work plans. Consistency in language ensures all stakeholders (users, product managers, developers) can understand specifications and plans without translation overhead. Mixing languages in specifications creates confusion and reduces accessibility for non-technical stakeholders reviewing requirements.
 
 ## Performance Targets
 
@@ -179,4 +195,4 @@ Violations MUST be justified in the implementation plan with:
 - Mitigation plan to minimize impact
 - Future refactoring plan to eliminate violation
 
-**Version**: 1.0.0 | **Ratified**: 2025-10-24 | **Last Amended**: 2025-10-24
+**Version**: 1.1.0 | **Ratified**: 2025-10-24 | **Last Amended**: 2025-10-24
