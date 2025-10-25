@@ -43,8 +43,35 @@ def create_export_zip() -> Tuple[Path, int]:
         FileNotFoundError: 如果 DATA_DIR 不存在
         IOError: 如果建立 ZIP 失敗
     """
-    # T010: 將在此實作
-    pass
+    if not DATA_DIR.exists():
+        raise FileNotFoundError(f"資料目錄不存在: {DATA_DIR}")
+    
+    # 產生帶時間戳的檔名
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"export_data_{timestamp}.zip"
+    zip_path = TEMP_DIR / filename
+    
+    file_count = 0
+    
+    try:
+        # 使用 ZIP_DEFLATED 壓縮,串流方式處理
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            # 遞迴遍歷 backend/data 目錄
+            for item in DATA_DIR.rglob("*"):
+                if item.is_file() and item.suffix == ".md":
+                    # 計算相對路徑 (保持 Day/Week/Month/Year 結構)
+                    # backend/data/Day/20251025.md -> data/Day/20251025.md
+                    arcname = item.relative_to(DATA_DIR.parent)
+                    zipf.write(item, arcname)
+                    file_count += 1
+        
+        return zip_path, file_count
+        
+    except Exception as e:
+        # 清理失敗的 ZIP 檔案
+        if zip_path.exists():
+            zip_path.unlink()
+        raise IOError(f"建立 ZIP 檔案失敗: {str(e)}")
 
 
 # ============================================================================

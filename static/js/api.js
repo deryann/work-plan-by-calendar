@@ -215,6 +215,30 @@ class PlanAPI {
     async healthCheck() {
         return await this.request('/health');
     }
+
+    /**
+     * Export all plan data as ZIP file
+     * @returns {Promise<object>} Export response with download URL
+     */
+    async exportData() {
+        const response = await fetch(`${this.baseURL}/api/export/create`, {
+            method: 'POST'
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail?.message || '匯出失敗');
+        }
+        return await response.json();
+    }
+
+    /**
+     * Trigger browser download of exported ZIP file
+     * @param {string} filename - ZIP filename to download
+     */
+    downloadExport(filename) {
+        const downloadUrl = `${this.baseURL}/api/export/download/${filename}`;
+        window.location.href = downloadUrl;
+    }
 }
 
 // API client singleton

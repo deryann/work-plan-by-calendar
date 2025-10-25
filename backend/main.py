@@ -2,10 +2,11 @@ from fastapi import FastAPI, HTTPException, status, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 import sys
 import os
+import tempfile
 from pathlib import Path
 
 # Add the project root to Python path
@@ -14,10 +15,12 @@ sys.path.append(str(project_root))
 
 from backend.models import (
     Plan, PlanType, PlanCreate, PlanUpdate, AllPlans, 
-    CopyRequest, ErrorResponse, Settings, UISettings, SettingsUpdate
+    CopyRequest, ErrorResponse, Settings, UISettings, SettingsUpdate,
+    ExportResponse, ImportValidation, ImportSuccessResponse
 )
 from backend.plan_service import PlanService
 from backend.settings_service import SettingsService
+from backend.data_export_service import create_export_zip
 
 app = FastAPI(
     title="Work Plan Calendar API",
@@ -381,6 +384,75 @@ async def reset_settings():
                 details={}
             ).dict()
         )
+
+
+# Data Export/Import endpoints
+@app.post("/api/export/create", response_model=ExportResponse)
+async def export_data():
+    """建立資料匯出檔案"""
+    try:
+        zip_path, file_count = create_export_zip()
+        file_size = zip_path.stat().st_size
+        created_at = datetime.now().isoformat()
+        
+        return ExportResponse(
+            filename=zip_path.name,
+            file_size=file_size,
+            created_at=created_at,
+            file_count=file_count,
+            download_url=f"/api/export/download/{zip_path.name}"
+        )
+    except FileNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=ErrorResponse(
+                error="DATA_DIR_NOT_FOUND",
+                message=str(e),
+                details={}
+            ).dict()
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="EXPORT_ERROR",
+                message=f"匯出失敗: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.get("/api/export/download/{filename}")
+async def download_export(filename: str):
+    """下載匯出的 ZIP 檔案"""
+    # 驗證檔名格式 (防止路徑穿越攻擊)
+    import re
+    if not re.match(r'^export_data_\d{8}_\d{6}\.zip$', filename):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorResponse(
+                error="INVALID_FILENAME",
+                message="無效的檔案名稱格式",
+                details={"expected_format": "export_data_YYYYMMDD_HHMMSS.zip"}
+            ).dict()
+        )
+    
+    file_path = Path(tempfile.gettempdir()) / filename
+    if not file_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=ErrorResponse(
+                error="FILE_NOT_FOUND",
+                message="找不到指定的匯出檔案",
+                details={"filename": filename}
+            ).dict()
+        )
+    
+    return FileResponse(
+        path=str(file_path),
+        filename=filename,
+        media_type="application/zip"
+    )
 
 
 if __name__ == "__main__":

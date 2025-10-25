@@ -72,6 +72,35 @@ class SettingsModal {
             });
         }
 
+        // Export button
+        const exportBtn = document.getElementById('export-data-btn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                this.handleExport();
+            });
+        }
+
+        // Import button  
+        const importBtn = document.getElementById('import-data-btn');
+        if (importBtn) {
+            importBtn.addEventListener('click', () => {
+                const fileInput = document.getElementById('import-file-input');
+                if (fileInput) {
+                    fileInput.click();
+                }
+            });
+        }
+
+        // Import file input
+        const fileInput = document.getElementById('import-file-input');
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    this.handleImport(e.target.files[0]);
+                }
+            });
+        }
+
         // Panel toggle checkboxes
         const toggles = document.querySelectorAll('.panel-toggle');
         toggles.forEach(toggle => {
@@ -380,6 +409,36 @@ class SettingsModal {
                 });
             }, 2000);
         }
+    }
+
+    /**
+     * Handle data export
+     */
+    async handleExport() {
+        try {
+            Utils.showLoading('正在匯出資料...');
+            
+            const result = await window.planAPI.exportData();
+            
+            Utils.showSuccess(`成功匯出 ${result.file_count} 個檔案`);
+            
+            // Trigger download
+            window.planAPI.downloadExport(result.filename);
+            
+        } catch (error) {
+            console.error('Export failed:', error);
+            Utils.showError('匯出失敗: ' + error.message);
+        } finally {
+            Utils.hideLoading();
+        }
+    }
+
+    /**
+     * Handle data import (placeholder for US2/US3)
+     */
+    async handleImport(file) {
+        Utils.showError('匯入功能將在 Phase 4 實作');
+        // T026-T044: 將在後續 Phase 實作驗證和匯入邏輯
     }
 }
 
