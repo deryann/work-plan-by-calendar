@@ -862,6 +862,33 @@
     z-index: 1;
 }
 
+/* Hide vertical resize handle when panel is maximized */
+.panel-maximized .vertical-resize-handle {
+    display: none !important;
+}
+
+/* Adjust panel content to fill viewport when maximized */
+.panel-maximized .panel-content {
+    height: calc(100vh - 60px) !important; /* Subtract header height */
+    overflow-y: auto;
+    display: flex !important;
+    flex-direction: column;
+}
+
+.panel-maximized .markdown-editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+}
+
+.panel-maximized .markdown-editor,
+.panel-maximized .markdown-preview {
+    flex: 1;
+    height: 100% !important;
+    max-height: 100% !important;
+}
+
 .panel-hidden-by-maximize {
     display: none !important;
 }
