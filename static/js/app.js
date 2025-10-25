@@ -243,7 +243,7 @@ class WorkPlanApp {
 
             // Create new panel
             const newPanel = new PlanPanel({
-                type: planType,
+                type: planType  ,
                 date: Utils.getCanonicalDate(planType, this.currentDate),
                 isCurrent: true,
                 container: container.parentElement,

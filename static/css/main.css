@@ -256,8 +256,8 @@
 }
 
 .markdown-editor:focus {
-    ring: 2px;
-    ring-color: var(--color-accent);
+    outline: 2px solid var(--color-accent);
+    outline-offset: 0;
 }
 
 .markdown-editor::placeholder {
