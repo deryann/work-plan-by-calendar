@@ -878,6 +878,14 @@
     flex-direction: column;
 }
 
+.panel-maximized .edit-mode,
+.panel-maximized .preview-mode {
+    flex: 1;
+    display: flex !important;
+    flex-direction: column;
+    height: 100%;
+}
+
 .panel-maximized .markdown-editor-container {
     flex: 1;
     display: flex;
