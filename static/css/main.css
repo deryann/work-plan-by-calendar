@@ -10,6 +10,9 @@
     --color-text: #374151;
     --color-text-secondary: #64748b;
     --color-title-text: #1f2937;
+    
+    /* Panel dimensions */
+    --panel-header-height: 60px;
 }
 
 /* Theme-specific styles */
@@ -154,7 +157,7 @@
 
 /* Panel animations */
 .panel-collapsed {
-    max-height: 60px;
+    max-height: var(--panel-header-height);
     overflow: hidden;
 }
 
@@ -860,6 +863,33 @@
     opacity: 0.8;
     border: 1px solid rgba(255, 255, 255, 0.3);
     z-index: 1;
+}
+
+/* Hide vertical resize handle when panel is maximized */
+.panel-maximized .vertical-resize-handle {
+    display: none !important;
+}
+
+/* Adjust panel content to fill viewport when maximized */
+.panel-maximized .panel-content {
+    height: calc(100vh - var(--panel-header-height)) !important;
+    overflow-y: auto;
+    display: flex !important;
+    flex-direction: column;
+}
+
+.panel-maximized .markdown-editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+}
+
+.panel-maximized .markdown-editor,
+.panel-maximized .markdown-preview {
+    flex: 1;
+    height: 100% !important;
+    max-height: 100% !important;
 }
 
 .panel-hidden-by-maximize {
