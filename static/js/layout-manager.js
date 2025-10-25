@@ -9,6 +9,7 @@ class LayoutManager {
         
         this.isResizing = false;
         this.isLeftPanelCollapsed = Utils.loadFromStorage('left-panel-collapsed', false);
+        this.maximizedPanel = null; // Track which panel is currently maximized
         
         this.init();
     }
@@ -130,6 +131,12 @@ class LayoutManager {
      * Toggle left panel visibility
      */
     toggleLeftPanel() {
+        // If any panel is maximized, ignore or restore first
+        if (this.isAnyPanelMaximized()) {
+            console.log('Cannot toggle left panel while a panel is maximized');
+            return;
+        }
+        
         this.isLeftPanelCollapsed = !this.isLeftPanelCollapsed;
         
         if (this.isLeftPanelCollapsed) {
@@ -366,6 +373,67 @@ class LayoutManager {
         }
         
         this.updateToggleButton();
+    }
+
+    /**
+     * Maximize a panel (hide all other panels)
+     * @param {HTMLElement} panelElement - The panel to maximize
+     */
+    maximizePanel(panelElement) {
+        if (!panelElement || this.maximizedPanel === panelElement) {
+            return; // Already maximized or invalid panel
+        }
+
+        // Set maximized panel reference
+        this.maximizedPanel = panelElement;
+
+        // Add maximized class to the panel
+        panelElement.classList.add('panel-maximized');
+
+        // Hide all other panels
+        const allPanels = document.querySelectorAll('.plan-panel');
+        allPanels.forEach(panel => {
+            if (panel !== panelElement) {
+                panel.classList.add('panel-hidden-by-maximize');
+            }
+        });
+    }
+
+    /**
+     * Restore normal view (show all panels)
+     */
+    restoreNormalView() {
+        if (!this.maximizedPanel) {
+            return; // No panel is maximized
+        }
+
+        // Remove maximized class from the previously maximized panel
+        this.maximizedPanel.classList.remove('panel-maximized');
+
+        // Show all hidden panels
+        const allPanels = document.querySelectorAll('.plan-panel');
+        allPanels.forEach(panel => {
+            panel.classList.remove('panel-hidden-by-maximize');
+        });
+
+        // Clear maximized panel reference
+        this.maximizedPanel = null;
+    }
+
+    /**
+     * Check if any panel is currently maximized
+     * @returns {boolean}
+     */
+    isAnyPanelMaximized() {
+        return this.maximizedPanel !== null;
+    }
+
+    /**
+     * Get the currently maximized panel
+     * @returns {HTMLElement|null}
+     */
+    getMaximizedPanel() {
+        return this.maximizedPanel;
     }
 }
 
