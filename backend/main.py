@@ -20,7 +20,7 @@ from backend.models import (
 )
 from backend.plan_service import PlanService
 from backend.settings_service import SettingsService
-from backend.data_export_service import create_export_zip, validate_zip_file
+from backend.data_export_service import create_export_zip, validate_zip_file, execute_import
 
 app = FastAPI(
     title="Work Plan Calendar API",
@@ -467,6 +467,43 @@ async def validate_import(file: UploadFile = File(...)):
             detail=ErrorResponse(
                 error="VALIDATION_ERROR",
                 message=f"驗證過程發生錯誤: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.post("/api/import/execute", response_model=ImportSuccessResponse)
+async def import_data(file: UploadFile = File(...)):
+    """執行資料匯入 (含驗證、備份、回滾機制)"""
+    try:
+        import_result = await execute_import(file)
+        return import_result
+    except ValueError as e:
+        # 驗證失敗
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorResponse(
+                error="VALIDATION_FAILED",
+                message=str(e),
+                details={}
+            ).dict()
+        )
+    except IOError as e:
+        # 匯入/回滾失敗
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="IMPORT_ERROR",
+                message=str(e),
+                details={}
+            ).dict()
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="UNKNOWN_ERROR",
+                message=f"匯入過程發生未知錯誤: {str(e)}",
                 details={}
             ).dict()
         )

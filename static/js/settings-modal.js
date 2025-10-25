@@ -482,13 +482,26 @@ class SettingsModal {
                 return;
             }
 
-            // TODO Phase 5: 執行匯入
-            Utils.showError('匯入執行功能將在 Phase 5 實作');
+            // 執行匯入
+            Utils.showLoading('正在匯入資料...');
+            
+            const importResult = await window.planAPI.executeImport(file);
+            
+            Utils.hideLoading();
+            Utils.showSuccess(
+                `${importResult.message}\n\n` +
+                `匯入時間: ${new Date(importResult.imported_at).toLocaleString('zh-TW')}`
+            );
+
+            // 重新整理頁面以顯示新資料
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
 
         } catch (error) {
             Utils.hideLoading();
-            Utils.showError(`驗證失敗: ${error.message}`);
-            console.error('Import validation error:', error);
+            Utils.showError(`匯入失敗: ${error.message}`);
+            console.error('Import error:', error);
         }
     }
 }

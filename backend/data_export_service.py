@@ -358,9 +358,30 @@ def backup_current_data() -> Path:
     
     Returns:
         Path: 備份目錄路徑
+    
+    Raises:
+        IOError: 如果備份失敗
     """
-    # T037: 將在此實作
-    pass
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_dir = TEMP_DIR / f"backup_data_{timestamp}"
+    
+    try:
+        # 如果 DATA_DIR 存在且有內容,進行備份
+        if DATA_DIR.exists():
+            shutil.copytree(DATA_DIR, backup_dir, dirs_exist_ok=True)
+            print(f"✅ 資料已備份至: {backup_dir}")
+        else:
+            # 如果目錄不存在,建立空備份目錄作為標記
+            backup_dir.mkdir(parents=True, exist_ok=True)
+            print(f"⚠️  原始資料目錄不存在,建立空備份: {backup_dir}")
+        
+        return backup_dir
+        
+    except Exception as e:
+        # 清理失敗的備份
+        if backup_dir.exists():
+            shutil.rmtree(backup_dir)
+        raise IOError(f"備份失敗: {str(e)}")
 
 
 def restore_backup(backup_path: Path) -> None:
@@ -369,9 +390,31 @@ def restore_backup(backup_path: Path) -> None:
     
     Args:
         backup_path: 備份目錄路徑
+        
+    Raises:
+        IOError: 如果還原失敗
     """
-    # T038: 將在此實作
-    pass
+    if not backup_path.exists():
+        raise IOError(f"備份目錄不存在: {backup_path}")
+    
+    try:
+        # 刪除當前資料
+        if DATA_DIR.exists():
+            shutil.rmtree(DATA_DIR)
+        
+        # 從備份還原
+        if any(backup_path.iterdir()):  # 檢查備份是否有內容
+            shutil.copytree(backup_path, DATA_DIR, dirs_exist_ok=True)
+            print(f"✅ 資料已從備份還原: {backup_path}")
+        else:
+            # 空備份表示原本就沒有資料,確保目錄不存在
+            print(f"⚠️  空備份,不進行還原")
+        
+        # 清理備份
+        shutil.rmtree(backup_path)
+        
+    except Exception as e:
+        raise IOError(f"還原失敗: {str(e)}")
 
 
 def safe_extract_member(zip_file: zipfile.ZipFile, member: str, target_dir: Path) -> None:
@@ -386,8 +429,27 @@ def safe_extract_member(zip_file: zipfile.ZipFile, member: str, target_dir: Path
     Raises:
         SecurityError: 如果偵測到路徑穿越攻擊
     """
-    # T039: 將在此實作  
-    pass
+    # 取得解壓後的完整路徑
+    member_path = target_dir / member
+    
+    # 解析為絕對路徑並檢查是否在目標目錄內
+    try:
+        resolved_path = member_path.resolve()
+        target_resolved = target_dir.resolve()
+        
+        # 檢查解壓路徑是否在目標目錄內 (防止 Zip Slip)
+        if not str(resolved_path).startswith(str(target_resolved)):
+            raise SecurityError(
+                f"偵測到 Zip Slip 攻擊: {member} -> {resolved_path}"
+            )
+        
+        # 安全解壓
+        zip_file.extract(member, target_dir)
+        
+    except Exception as e:
+        if isinstance(e, SecurityError):
+            raise
+        raise IOError(f"解壓檔案失敗 {member}: {str(e)}")
 
 
 async def execute_import(file) -> ImportSuccessResponse:
@@ -403,5 +465,96 @@ async def execute_import(file) -> ImportSuccessResponse:
     Raises:
         HTTPException: 如果驗證失敗或匯入過程發生錯誤
     """
-    # T040: 將在此實作
+    backup_path = None
+    temp_zip = None
+    
+    try:
+        # 1. 先執行驗證
+        validation = await validate_zip_file(file)
+        if not validation.is_valid:
+            # 匯總錯誤訊息
+            error_summary = "; ".join([err.message for err in validation.errors[:3]])
+            raise ValueError(f"驗證失敗: {error_summary}")
+        
+        # 2. 建立備份
+        backup_path = backup_current_data()
+        
+        # 3. 儲存上傳的 ZIP 檔案
+        temp_zip = TEMP_DIR / f"import_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
+        content = await file.read()
+        temp_zip.write_bytes(content)
+        
+        # 4. 清空現有資料
+        if DATA_DIR.exists():
+            shutil.rmtree(DATA_DIR)
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        
+        # 5. 解壓匯入資料
+        overwritten_count = 0
+        imported_count = 0
+        
+        with zipfile.ZipFile(temp_zip, 'r') as zipf:
+            for member in zipf.namelist():
+                # 跳過目錄和非 .md 檔案
+                if member.endswith('/') or not member.endswith('.md'):
+                    continue
+                
+                # 計算目標路徑 (移除 data/ 前綴如果存在)
+                member_path = Path(member)
+                if member_path.parts[0] == 'data':
+                    # data/Day/20251025.md -> Day/20251025.md
+                    relative_path = Path(*member_path.parts[1:])
+                else:
+                    relative_path = member_path
+                
+                target_file = DATA_DIR / relative_path
+                
+                # 檢查檔案是否已存在 (用於統計覆寫數量)
+                if target_file.exists():
+                    overwritten_count += 1
+                
+                # 確保目標目錄存在
+                target_file.parent.mkdir(parents=True, exist_ok=True)
+                
+                # 安全解壓
+                safe_extract_member(zipf, member, DATA_DIR.parent)
+                imported_count += 1
+        
+        # 6. 匯入成功,清理備份
+        if backup_path and backup_path.exists():
+            shutil.rmtree(backup_path)
+        
+        # 7. 清理臨時 ZIP
+        if temp_zip and temp_zip.exists():
+            temp_zip.unlink()
+        
+        return ImportSuccessResponse(
+            success=True,
+            message=f"成功匯入 {imported_count} 個檔案 (覆寫 {overwritten_count} 個)",
+            file_count=imported_count,
+            overwritten_count=overwritten_count,
+            imported_at=datetime.now().isoformat()
+        )
+        
+    except Exception as e:
+        # 匯入失敗,從備份還原
+        if backup_path and backup_path.exists():
+            try:
+                restore_backup(backup_path)
+                error_msg = f"匯入失敗已回滾: {str(e)}"
+            except Exception as restore_error:
+                error_msg = f"匯入失敗且回滾失敗: {str(e)} | 回滾錯誤: {str(restore_error)}"
+        else:
+            error_msg = f"匯入失敗: {str(e)}"
+        
+        # 清理臨時檔案
+        if temp_zip and temp_zip.exists():
+            temp_zip.unlink()
+        
+        raise IOError(error_msg)
+
+
+# 自訂例外
+class SecurityError(Exception):
+    """安全性相關錯誤"""
     pass

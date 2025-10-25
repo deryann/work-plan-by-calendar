@@ -261,6 +261,28 @@ class PlanAPI {
         
         return await response.json();
     }
+
+    /**
+     * Execute data import (with validation, backup, and rollback)
+     * @param {File} file - ZIP file to import
+     * @returns {Promise<object>} Import result with file count and overwritten count
+     */
+    async executeImport(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch(`${this.baseURL}/api/import/execute`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail?.message || '匯入失敗');
+        }
+        
+        return await response.json();
+    }
 }
 
 // API client singleton
