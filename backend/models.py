@@ -131,14 +131,14 @@ class ValidationError(BaseModel):
     error_type: ErrorType
     file_path: str
     message: str
-    details: Optional[str] = None
+    details: Optional[dict] = None  # 改為 dict 以支援結構化資訊
 
 
 class ImportValidation(BaseModel):
     """匯入檔案驗證結果"""
     is_valid: bool
     errors: List[ValidationError] = Field(default_factory=list)
-    warnings: List[str] = Field(default_factory=list)
+    warnings: List[ValidationError] = Field(default_factory=list)  # 改為 ValidationError 以保持一致
     file_count: int = Field(ge=0)
     validated_at: str
     

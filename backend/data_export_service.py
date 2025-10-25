@@ -71,12 +71,12 @@ def create_export_zip() -> Tuple[Path, int]:
     try:
         # 使用 ZIP_DEFLATED 壓縮,串流方式處理
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            # 遞迴遍歷 backend/data 目錄
+            # 遞迴遍歷 DATA_DIR 目錄
             for item in DATA_DIR.rglob("*"):
                 if item.is_file() and item.suffix == ".md":
-                    # 計算相對路徑 (保持 Day/Week/Month/Year 結構)
-                    # backend/data/Day/20251025.md -> data/Day/20251025.md
-                    arcname = item.relative_to(DATA_DIR.parent)
+                    # 計算相對路徑 (只保留 Day/Week/Month/Year 結構)
+                    # /path/to/backend/data/Day/20251025.md -> Day/20251025.md
+                    arcname = item.relative_to(DATA_DIR)
                     zipf.write(item, arcname)
                     file_count += 1
         
@@ -238,7 +238,8 @@ async def validate_zip_file(file) -> ImportValidation:
                 is_valid=False,
                 errors=errors,
                 warnings=warnings,
-                file_count=0
+                file_count=0,
+                validated_at=datetime.now().isoformat()
             )
         
         # 2. 驗證 ZIP 結構
@@ -326,7 +327,8 @@ async def validate_zip_file(file) -> ImportValidation:
             is_valid=len(errors) == 0,
             errors=errors,
             warnings=warnings,
-            file_count=file_count
+            file_count=file_count,
+            validated_at=datetime.now().isoformat()
         )
         
     except zipfile.BadZipFile:
@@ -340,7 +342,8 @@ async def validate_zip_file(file) -> ImportValidation:
             is_valid=False,
             errors=errors,
             warnings=warnings,
-            file_count=0
+            file_count=0,
+            validated_at=datetime.now().isoformat()
         )
         
     except Exception as e:
@@ -354,7 +357,8 @@ async def validate_zip_file(file) -> ImportValidation:
             is_valid=False,
             errors=errors,
             warnings=warnings,
-            file_count=0
+            file_count=0,
+            validated_at=datetime.now().isoformat()
         )
         
     finally:
@@ -484,20 +488,30 @@ async def execute_import(file) -> ImportSuccessResponse:
     temp_zip = None
     
     try:
-        # 1. 先執行驗證
-        validation = await validate_zip_file(file)
-        if not validation.is_valid:
-            # 匯總錯誤訊息
-            error_summary = "; ".join([err.message for err in validation.errors[:3]])
-            raise ValueError(f"驗證失敗: {error_summary}")
-        
-        # 2. 建立備份
-        backup_path = backup_current_data()
-        
-        # 3. 儲存上傳的 ZIP 檔案
+        # 1. 先儲存上傳的 ZIP 檔案
         temp_zip = TEMP_DIR / f"import_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
         content = await file.read()
         temp_zip.write_bytes(content)
+        
+        # 2. 驗證 ZIP 檔案 (使用檔案路徑而非 UploadFile)
+        # 簡單驗證:檢查是否為有效 ZIP 和結構
+        try:
+            with zipfile.ZipFile(temp_zip, 'r') as zipf:
+                # 檢查結構
+                all_paths = [Path(name) for name in zipf.namelist()]
+                missing_dirs = []
+                for required_dir in REQUIRED_DIRS:
+                    found = any(required_dir in str(p) for p in all_paths)
+                    if not found:
+                        missing_dirs.append(required_dir)
+                
+                if missing_dirs:
+                    raise ValueError(f"ZIP 檔案缺少必要目錄: {', '.join(missing_dirs)}")
+        except zipfile.BadZipFile:
+            raise ValueError("上傳的檔案不是有效的 ZIP 格式")
+        
+        # 3. 建立備份
+        backup_path = backup_current_data()
         
         # 4. 清空現有資料
         if DATA_DIR.exists():
@@ -514,15 +528,9 @@ async def execute_import(file) -> ImportSuccessResponse:
                 if member.endswith('/') or not member.endswith('.md'):
                     continue
                 
-                # 計算目標路徑 (移除 data/ 前綴如果存在)
-                member_path = Path(member)
-                if member_path.parts[0] == 'data':
-                    # data/Day/20251025.md -> Day/20251025.md
-                    relative_path = Path(*member_path.parts[1:])
-                else:
-                    relative_path = member_path
-                
-                target_file = DATA_DIR / relative_path
+                # ZIP 內的路徑應該直接是 Day/Week/Month/Year 開頭
+                # Day/20251025.md -> 直接使用
+                target_file = DATA_DIR / member
                 
                 # 檢查檔案是否已存在 (用於統計覆寫數量)
                 if target_file.exists():
@@ -531,8 +539,8 @@ async def execute_import(file) -> ImportSuccessResponse:
                 # 確保目標目錄存在
                 target_file.parent.mkdir(parents=True, exist_ok=True)
                 
-                # 安全解壓
-                safe_extract_member(zipf, member, DATA_DIR.parent)
+                # 安全解壓到 DATA_DIR
+                safe_extract_member(zipf, member, DATA_DIR)
                 imported_count += 1
         
         # 6. 匯入成功,清理備份
