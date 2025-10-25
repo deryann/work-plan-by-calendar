@@ -239,6 +239,28 @@ class PlanAPI {
         const downloadUrl = `${this.baseURL}/api/export/download/${filename}`;
         window.location.href = downloadUrl;
     }
+
+    /**
+     * Validate import ZIP file
+     * @param {File} file - ZIP file to validate
+     * @returns {Promise<object>} Validation result with errors/warnings
+     */
+    async validateImport(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch(`${this.baseURL}/api/import/validate`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail?.message || '驗證失敗');
+        }
+        
+        return await response.json();
+    }
 }
 
 // API client singleton

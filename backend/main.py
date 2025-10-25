@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status, Request
+from fastapi import FastAPI, HTTPException, status, Request, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,7 +20,7 @@ from backend.models import (
 )
 from backend.plan_service import PlanService
 from backend.settings_service import SettingsService
-from backend.data_export_service import create_export_zip
+from backend.data_export_service import create_export_zip, validate_zip_file
 
 app = FastAPI(
     title="Work Plan Calendar API",
@@ -453,6 +453,23 @@ async def download_export(filename: str):
         filename=filename,
         media_type="application/zip"
     )
+
+
+@app.post("/api/import/validate", response_model=ImportValidation)
+async def validate_import(file: UploadFile = File(...)):
+    """驗證匯入檔案格式和內容"""
+    try:
+        validation_result = await validate_zip_file(file)
+        return validation_result
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="VALIDATION_ERROR",
+                message=f"驗證過程發生錯誤: {str(e)}",
+                details={}
+            ).dict()
+        )
 
 
 if __name__ == "__main__":

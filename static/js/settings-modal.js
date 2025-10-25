@@ -437,8 +437,59 @@ class SettingsModal {
      * Handle data import (placeholder for US2/US3)
      */
     async handleImport(file) {
-        Utils.showError('匯入功能將在 Phase 4 實作');
-        // T026-T044: 將在後續 Phase 實作驗證和匯入邏輯
+        if (!file) {
+            Utils.showError('請選擇要匯入的 ZIP 檔案');
+            return;
+        }
+
+        try {
+            Utils.showLoading('正在驗證檔案...');
+
+            // 呼叫驗證 API
+            const validation = await window.planAPI.validateImport(file);
+
+            Utils.hideLoading();
+
+            // 如果有錯誤,顯示錯誤訊息並中斷
+            if (!validation.is_valid) {
+                const errorMessages = validation.errors.map(err => 
+                    `• ${err.message}`
+                ).join('\n');
+                
+                Utils.showError(
+                    `驗證失敗,發現 ${validation.errors.length} 個錯誤:\n\n${errorMessages}\n\n請修正後重新上傳。`
+                );
+                return;
+            }
+
+            // 如果有警告,顯示但不中斷
+            if (validation.warnings && validation.warnings.length > 0) {
+                const warningMessages = validation.warnings.map(warn => 
+                    `• ${warn.message}`
+                ).join('\n');
+                
+                console.warn('驗證警告:', warningMessages);
+            }
+
+            // 驗證通過,詢問是否繼續匯入
+            const confirmMessage = `驗證通過!\n\n` +
+                `檔案數量: ${validation.file_count} 個\n` +
+                (validation.warnings?.length > 0 ? `警告: ${validation.warnings.length} 個\n` : '') +
+                `\n確定要匯入這些資料嗎?\n(將覆蓋現有的同名檔案)`;
+
+            if (!confirm(confirmMessage)) {
+                Utils.showError('已取消匯入');
+                return;
+            }
+
+            // TODO Phase 5: 執行匯入
+            Utils.showError('匯入執行功能將在 Phase 5 實作');
+
+        } catch (error) {
+            Utils.hideLoading();
+            Utils.showError(`驗證失敗: ${error.message}`);
+            console.error('Import validation error:', error);
+        }
     }
 }
 
