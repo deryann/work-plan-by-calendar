@@ -45,14 +45,14 @@
 
 **⚠️ 重要**: 在此階段完成前,任何使用者故事都無法開始
 
-- [ ] T004 在 backend/models.py 新增 ErrorType Enum (structure/filename/date/weekday/size)
-- [ ] T005 [P] 在 backend/models.py 新增 ValidationError 模型 (error_type, file_path, message, details)
-- [ ] T006 [P] 在 backend/models.py 新增 ImportValidation 模型 (is_valid, errors, warnings, file_count, validated_at)
-- [ ] T007 [P] 在 backend/models.py 新增 ExportResponse 模型 (filename, file_size, created_at, file_count, download_url)
-- [ ] T008 [P] 在 backend/models.py 新增 ImportSuccessResponse 模型 (success, message, file_count, overwritten_count, imported_at)
-- [ ] T009 建立 backend/data_export_service.py 檔案框架和基本匯入
+- [x] T004 在 backend/models.py 新增 ErrorType Enum (structure/filename/date/weekday/size)
+- [x] T005 [P] 在 backend/models.py 新增 ValidationError 模型 (error_type, file_path, message, details)
+- [x] T006 [P] 在 backend/models.py 新增 ImportValidation 模型 (is_valid, errors, warnings, file_count, validated_at)
+- [x] T007 [P] 在 backend/models.py 新增 ExportResponse 模型 (filename, file_size, created_at, file_count, download_url)
+- [x] T008 [P] 在 backend/models.py 新增 ImportSuccessResponse 模型 (success, message, file_count, overwritten_count, imported_at)
+- [x] T009 建立 backend/data_export_service.py 檔案框架和基本匯入
 
-**檢查點**: 基礎模型和服務檔案已建立 - 使用者故事實作現在可以開始
+**檢查點**: ✅ 基礎模型和服務檔案已建立 - 使用者故事實作現在可以開始
 
 ---
 
