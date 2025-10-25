@@ -10,6 +10,9 @@
     --color-text: #374151;
     --color-text-secondary: #64748b;
     --color-title-text: #1f2937;
+    
+    /* Panel dimensions */
+    --panel-header-height: 60px;
 }
 
 /* Theme-specific styles */
@@ -869,7 +872,7 @@
 
 /* Adjust panel content to fill viewport when maximized */
 .panel-maximized .panel-content {
-    height: calc(100vh - 60px) !important; /* Subtract header height */
+    height: calc(100vh - var(--panel-header-height)) !important;
     overflow-y: auto;
     display: flex !important;
     flex-direction: column;
