@@ -22,7 +22,22 @@ from backend.models import (
 )
 
 # 常數定義
-DATA_DIR = Path("backend/data")
+# 使用絕對路徑,支援開發環境和部署環境
+_current_file = Path(__file__).resolve()
+_backend_dir = _current_file.parent  # backend/
+_project_root = _backend_dir.parent  # project root
+DATA_DIR = _backend_dir / "data"  # backend/data/
+
+# 如果 backend/data 不存在,嘗試使用專案根目錄的 data/
+if not DATA_DIR.exists():
+    DATA_DIR = _project_root / "data"
+    if not DATA_DIR.exists():
+        # 建立預設目錄結構
+        DATA_DIR = _backend_dir / "data"
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        for dir_name in ["Day", "Week", "Month", "Year"]:
+            (DATA_DIR / dir_name).mkdir(exist_ok=True)
+
 TEMP_DIR = Path(tempfile.gettempdir())
 REQUIRED_DIRS = ["Day", "Week", "Month", "Year"]
 MAX_ZIP_SIZE = 100 * 1024 * 1024  # 100MB

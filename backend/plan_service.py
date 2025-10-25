@@ -9,8 +9,28 @@ from .date_calculator import DateCalculator
 class PlanService:
     """Business logic service for plan management."""
     
-    def __init__(self, data_dir: str = "data"):
-        self.data_dir = Path(data_dir)
+    def __init__(self, data_dir: Optional[str] = None):
+        """初始化 PlanService
+        
+        Args:
+            data_dir: 資料目錄路徑。如果為 None,自動偵測正確路徑
+        """
+        if data_dir is None:
+            # 自動偵測路徑: backend/data 或 project_root/data
+            backend_dir = Path(__file__).parent
+            backend_data = backend_dir / "data"
+            project_data = backend_dir.parent / "data"
+            
+            if backend_data.exists():
+                self.data_dir = backend_data
+            elif project_data.exists():
+                self.data_dir = project_data
+            else:
+                # 預設建立在 backend/data
+                self.data_dir = backend_data
+        else:
+            self.data_dir = Path(data_dir)
+        
         self._ensure_directories_exist()
     
     def _ensure_directories_exist(self):

@@ -52,8 +52,10 @@ snapshot_dir = project_root / "snapshot"
 if snapshot_dir.exists():
     app.mount("/snapshot", StaticFiles(directory=str(snapshot_dir), html=True), name="snapshot")
 
-# Initialize services
-plan_service = PlanService()
+# Initialize services with correct data directory
+# 使用 backend/data 作為資料目錄
+data_dir = project_root / "backend" / "data"
+plan_service = PlanService(data_dir=str(data_dir))
 settings_service = SettingsService()
 
 
