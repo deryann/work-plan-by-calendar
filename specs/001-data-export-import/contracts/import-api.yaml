@@ -1,0 +1,332 @@
+openapi: 3.0.3
+info:
+  title: Work Plan Import API
+  description: 資料匯入功能的 API 規格
+  version: 1.0.0
+  contact:
+    name: Work Plan by Calendar
+
+servers:
+  - url: http://localhost:8000/api
+    description: 本地開發環境
+
+paths:
+  /import/validate:
+    post:
+      summary: 驗證匯入檔案格式
+      description: |
+        驗證上傳的 ZIP 檔案是否符合格式要求,但不實際執行匯入。
+        檢查項目:
+        - ZIP 結構 (是否包含 Day/Week/Month/Year 目錄)
+        - 檔名格式 (YYYYMMDD.md, YYYYMM.md, YYYY.md)
+        - 日期有效性 (無 20251301.md)
+        - 周計畫星期驗證 (Week 目錄中檔名必須是星期日日期)
+      operationId: validateImport
+      tags:
+        - Import
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 要驗證的 ZIP 檔案
+            encoding:
+              file:
+                contentType: application/zip, application/x-zip-compressed
+      responses:
+        '200':
+          description: 驗證完成 (無論通過或失敗)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportValidation'
+              examples:
+                valid:
+                  summary: 驗證通過
+                  value:
+                    is_valid: true
+                    errors: []
+                    warnings:
+                      - "建議在匯入前先匯出現有資料作為備份"
+                    file_count: 245
+                    validated_at: "2025-10-25T14:36:22+08:00"
+                invalid_filename:
+                  summary: 檔名格式錯誤
+                  value:
+                    is_valid: false
+                    errors:
+                      - error_type: filename
+                        file_path: Day/2025130.md
+                        message: "檔案名稱格式錯誤: 應為 YYYYMMDD.md 格式"
+                        details: "Expected 8 digits, got 7"
+                    warnings: []
+                    file_count: 18
+                    validated_at: "2025-10-25T14:35:10+08:00"
+                invalid_weekday:
+                  summary: 周計畫日期不是星期日
+                  value:
+                    is_valid: false
+                    errors:
+                      - error_type: weekday
+                        file_path: Week/20251020.md
+                        message: "周計畫檔名日期不是星期日 (2025-10-20 是星期一)"
+                        details: "weekday=0, expected=6"
+                    warnings: []
+                    file_count: 45
+                    validated_at: "2025-10-25T14:37:05+08:00"
+                missing_structure:
+                  summary: ZIP 結構錯誤
+                  value:
+                    is_valid: false
+                    errors:
+                      - error_type: structure
+                        file_path: ""
+                        message: "ZIP 檔案缺少必要目錄: Year"
+                        details: "Expected directories: Day, Week, Month, Year"
+                    warnings: []
+                    file_count: 0
+                    validated_at: "2025-10-25T14:38:15+08:00"
+        '400':
+          description: 請求錯誤
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_file:
+                  summary: 未上傳檔案
+                  value:
+                    error: "請上傳 ZIP 檔案"
+                    detail: "No file provided in request"
+                    timestamp: "2025-10-25T14:35:10+08:00"
+                wrong_type:
+                  summary: 檔案類型錯誤
+                  value:
+                    error: "檔案類型錯誤,僅接受 ZIP 格式"
+                    detail: "Content-Type: application/pdf"
+                    timestamp: "2025-10-25T14:35:10+08:00"
+                too_large:
+                  summary: 檔案過大
+                  value:
+                    error: "檔案大小超過限制 (100MB)"
+                    detail: "File size: 104857600 bytes"
+                    timestamp: "2025-10-25T14:35:10+08:00"
+        '500':
+          description: 伺服器錯誤
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /import/execute:
+    post:
+      summary: 執行資料匯入
+      description: |
+        將已驗證的 ZIP 檔案內容匯入到 backend/data 目錄。
+        注意事項:
+        - 建議先呼叫 /import/validate 確認格式正確
+        - 同名檔案會被直接覆蓋
+        - 失敗時會自動回滾所有變更
+      operationId: executeImport
+      tags:
+        - Import
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 要匯入的 ZIP 檔案
+                overwrite:
+                  type: boolean
+                  description: 是否覆蓋同名檔案
+                  default: true
+            encoding:
+              file:
+                contentType: application/zip, application/x-zip-compressed
+      responses:
+        '200':
+          description: 匯入成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportSuccessResponse'
+              examples:
+                success:
+                  summary: 匯入成功
+                  value:
+                    success: true
+                    message: "成功匯入 245 個檔案"
+                    file_count: 245
+                    overwritten_count: 12
+                    imported_at: "2025-10-25T14:40:30+08:00"
+        '400':
+          description: 驗證失敗,拒絕匯入
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportValidation'
+              examples:
+                validation_failed:
+                  summary: 格式驗證失敗
+                  value:
+                    is_valid: false
+                    errors:
+                      - error_type: filename
+                        file_path: Day/invalid.txt
+                        message: "檔案副檔名錯誤: 僅接受 .md 檔案"
+                        details: "Extension: .txt"
+                    warnings: []
+                    file_count: 50
+                    validated_at: "2025-10-25T14:40:25+08:00"
+        '500':
+          description: 匯入失敗 (已回滾)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                import_failed:
+                  summary: 匯入過程發生錯誤
+                  value:
+                    error: "匯入失敗: 磁碟空間不足,已回滾所有變更"
+                    detail: "No space left on device at file 123/245"
+                    timestamp: "2025-10-25T14:41:05+08:00"
+
+components:
+  schemas:
+    ImportValidation:
+      type: object
+      required:
+        - is_valid
+        - errors
+        - file_count
+        - validated_at
+      properties:
+        is_valid:
+          type: boolean
+          description: 整體驗證是否通過
+          example: false
+        errors:
+          type: array
+          description: 驗證錯誤列表
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        warnings:
+          type: array
+          description: 警告訊息列表 (非阻斷性)
+          items:
+            type: string
+          example:
+            - "建議在匯入前先匯出現有資料作為備份"
+        file_count:
+          type: integer
+          description: ZIP 中找到的檔案總數
+          minimum: 0
+          example: 245
+        validated_at:
+          type: string
+          format: date-time
+          description: 驗證時間 (ISO 8601)
+          example: "2025-10-25T14:36:22+08:00"
+
+    ValidationError:
+      type: object
+      required:
+        - error_type
+        - file_path
+        - message
+      properties:
+        error_type:
+          type: string
+          enum:
+            - structure
+            - filename
+            - date
+            - weekday
+            - size
+          description: 錯誤類型
+          example: filename
+        file_path:
+          type: string
+          description: 問題檔案的相對路徑
+          example: Day/2025130.md
+        message:
+          type: string
+          description: 友善的錯誤訊息 (繁體中文)
+          example: "檔案名稱格式錯誤: 應為 YYYYMMDD.md 格式"
+        details:
+          type: string
+          description: 技術細節 (選填)
+          example: "Expected 8 digits, got 7"
+
+    ImportSuccessResponse:
+      type: object
+      required:
+        - success
+        - message
+        - file_count
+        - imported_at
+      properties:
+        success:
+          type: boolean
+          description: 是否成功
+          example: true
+        message:
+          type: string
+          description: 成功訊息 (繁體中文)
+          example: "成功匯入 245 個檔案"
+        file_count:
+          type: integer
+          description: 成功匯入的檔案總數
+          minimum: 0
+          example: 245
+        overwritten_count:
+          type: integer
+          description: 被覆蓋的現有檔案數量
+          minimum: 0
+          example: 12
+        imported_at:
+          type: string
+          format: date-time
+          description: 匯入完成時間
+          example: "2025-10-25T14:40:30+08:00"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: 使用者友善的錯誤訊息 (繁體中文)
+          example: "匯入失敗: 磁碟空間不足,已回滾所有變更"
+        detail:
+          type: string
+          description: 技術細節 (選填,用於除錯)
+          example: "No space left on device at file 123/245"
+        timestamp:
+          type: string
+          format: date-time
+          description: 錯誤發生時間
+          example: "2025-10-25T14:41:05+08:00"
+
+  securitySchemes: {}
+
+tags:
+  - name: Import
+    description: 資料匯入相關操作

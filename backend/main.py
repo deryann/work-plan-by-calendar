@@ -1,11 +1,12 @@
-from fastapi import FastAPI, HTTPException, status, Request
+from fastapi import FastAPI, HTTPException, status, Request, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 import sys
 import os
+import tempfile
 from pathlib import Path
 
 # Add the project root to Python path
@@ -14,10 +15,12 @@ sys.path.append(str(project_root))
 
 from backend.models import (
     Plan, PlanType, PlanCreate, PlanUpdate, AllPlans, 
-    CopyRequest, ErrorResponse, Settings, UISettings, SettingsUpdate
+    CopyRequest, ErrorResponse, Settings, UISettings, SettingsUpdate,
+    ExportResponse, ImportValidation, ImportSuccessResponse
 )
 from backend.plan_service import PlanService
 from backend.settings_service import SettingsService
+from backend.data_export_service import create_export_zip, validate_zip_file, execute_import
 
 app = FastAPI(
     title="Work Plan Calendar API",
@@ -49,8 +52,10 @@ snapshot_dir = project_root / "snapshot"
 if snapshot_dir.exists():
     app.mount("/snapshot", StaticFiles(directory=str(snapshot_dir), html=True), name="snapshot")
 
-# Initialize services
-plan_service = PlanService()
+# Initialize services with correct data directory
+# 使用 backend/data 作為資料目錄
+data_dir = project_root / "backend" / "data"
+plan_service = PlanService(data_dir=str(data_dir))
 settings_service = SettingsService()
 
 
@@ -378,6 +383,129 @@ async def reset_settings():
             detail=ErrorResponse(
                 error="SETTINGS_RESET_ERROR",
                 message=f"Failed to reset settings: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+# Data Export/Import endpoints
+@app.post("/api/export/create", response_model=ExportResponse)
+async def export_data():
+    """建立資料匯出檔案"""
+    try:
+        zip_path, file_count = create_export_zip()
+        file_size = zip_path.stat().st_size
+        created_at = datetime.now().isoformat()
+        
+        return ExportResponse(
+            filename=zip_path.name,
+            file_size=file_size,
+            created_at=created_at,
+            file_count=file_count,
+            download_url=f"/api/export/download/{zip_path.name}"
+        )
+    except FileNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=ErrorResponse(
+                error="DATA_DIR_NOT_FOUND",
+                message=str(e),
+                details={}
+            ).dict()
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="EXPORT_ERROR",
+                message=f"匯出失敗: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.get("/api/export/download/{filename}")
+async def download_export(filename: str):
+    """下載匯出的 ZIP 檔案"""
+    # 驗證檔名格式 (防止路徑穿越攻擊)
+    import re
+    if not re.match(r'^export_data_\d{8}_\d{6}\.zip$', filename):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorResponse(
+                error="INVALID_FILENAME",
+                message="無效的檔案名稱格式",
+                details={"expected_format": "export_data_YYYYMMDD_HHMMSS.zip"}
+            ).dict()
+        )
+    
+    file_path = Path(tempfile.gettempdir()) / filename
+    if not file_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=ErrorResponse(
+                error="FILE_NOT_FOUND",
+                message="找不到指定的匯出檔案",
+                details={"filename": filename}
+            ).dict()
+        )
+    
+    return FileResponse(
+        path=str(file_path),
+        filename=filename,
+        media_type="application/zip"
+    )
+
+
+@app.post("/api/import/validate", response_model=ImportValidation)
+async def validate_import(file: UploadFile = File(...)):
+    """驗證匯入檔案格式和內容"""
+    try:
+        validation_result = await validate_zip_file(file)
+        return validation_result
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="VALIDATION_ERROR",
+                message=f"驗證過程發生錯誤: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.post("/api/import/execute", response_model=ImportSuccessResponse)
+async def import_data(file: UploadFile = File(...)):
+    """執行資料匯入 (含驗證、備份、回滾機制)"""
+    try:
+        import_result = await execute_import(file)
+        return import_result
+    except ValueError as e:
+        # 驗證失敗
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorResponse(
+                error="VALIDATION_FAILED",
+                message=str(e),
+                details={}
+            ).dict()
+        )
+    except IOError as e:
+        # 匯入/回滾失敗
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="IMPORT_ERROR",
+                message=str(e),
+                details={}
+            ).dict()
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="UNKNOWN_ERROR",
+                message=f"匯入過程發生未知錯誤: {str(e)}",
                 details={}
             ).dict()
         )

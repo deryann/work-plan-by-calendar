@@ -215,6 +215,74 @@ class PlanAPI {
     async healthCheck() {
         return await this.request('/health');
     }
+
+    /**
+     * Export all plan data as ZIP file
+     * @returns {Promise<object>} Export response with download URL
+     */
+    async exportData() {
+        const response = await fetch(`${this.baseURL}/api/export/create`, {
+            method: 'POST'
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail?.message || '匯出失敗');
+        }
+        return await response.json();
+    }
+
+    /**
+     * Trigger browser download of exported ZIP file
+     * @param {string} filename - ZIP filename to download
+     */
+    downloadExport(filename) {
+        const downloadUrl = `${this.baseURL}/api/export/download/${filename}`;
+        window.location.href = downloadUrl;
+    }
+
+    /**
+     * Validate import ZIP file
+     * @param {File} file - ZIP file to validate
+     * @returns {Promise<object>} Validation result with errors/warnings
+     */
+    async validateImport(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch(`${this.baseURL}/api/import/validate`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail?.message || '驗證失敗');
+        }
+        
+        return await response.json();
+    }
+
+    /**
+     * Execute data import (with validation, backup, and rollback)
+     * @param {File} file - ZIP file to import
+     * @returns {Promise<object>} Import result with file count and overwritten count
+     */
+    async executeImport(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch(`${this.baseURL}/api/import/execute`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail?.message || '匯入失敗');
+        }
+        
+        return await response.json();
+    }
 }
 
 // API client singleton

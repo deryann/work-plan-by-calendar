@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from enum import Enum
-from pydantic import BaseModel
-from typing import Optional, Dict, Any
+from pydantic import BaseModel, Field, validator
+from typing import Optional, Dict, Any, List
 
 
 class PlanType(str, Enum):
@@ -14,6 +14,16 @@ class PlanType(str, Enum):
 class CopyMode(str, Enum):
     APPEND = "append"
     REPLACE = "replace"
+
+
+# 資料匯出/匯入相關的 Enum 和模型
+class ErrorType(str, Enum):
+    """驗證錯誤類型"""
+    STRUCTURE = "structure"
+    FILENAME = "filename"
+    DATE = "date"
+    WEEKDAY = "weekday"
+    SIZE = "size"
 
 
 class PlanBase(BaseModel):
@@ -113,3 +123,46 @@ class Settings(BaseModel):
 
 class SettingsUpdate(BaseModel):
     ui: Optional[UISettings] = None
+
+
+# 資料匯出/匯入模型
+class ValidationError(BaseModel):
+    """單一驗證錯誤"""
+    error_type: ErrorType
+    file_path: str
+    message: str
+    details: Optional[dict] = None  # 改為 dict 以支援結構化資訊
+
+
+class ImportValidation(BaseModel):
+    """匯入檔案驗證結果"""
+    is_valid: bool
+    errors: List[ValidationError] = Field(default_factory=list)
+    warnings: List[ValidationError] = Field(default_factory=list)  # 改為 ValidationError 以保持一致
+    file_count: int = Field(ge=0)
+    validated_at: str
+    
+    @validator('errors')
+    def check_errors_when_invalid(cls, v, values):
+        """確保 is_valid=false 時必須有錯誤"""
+        if not values.get('is_valid') and len(v) == 0:
+            raise ValueError('is_valid=false 時 errors 必須包含至少一個錯誤')
+        return v
+
+
+class ExportResponse(BaseModel):
+    """匯出操作回應"""
+    filename: str
+    file_size: int = Field(ge=0)
+    created_at: str
+    file_count: int = Field(ge=0)
+    download_url: str
+
+
+class ImportSuccessResponse(BaseModel):
+    """匯入成功回應"""
+    success: bool
+    message: str
+    file_count: int = Field(ge=0)
+    overwritten_count: int = Field(ge=0)
+    imported_at: str

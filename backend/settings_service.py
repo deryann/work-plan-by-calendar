@@ -6,10 +6,30 @@ from backend.models import Settings, UISettings, PanelSettings, SettingsUpdate
 
 
 class SettingsService:
-    """Service for managing user settings"""
+    """Service for managing application settings."""
     
-    def __init__(self, settings_dir: str = "data/settings"):
-        self.settings_dir = Path(settings_dir)
+    def __init__(self, settings_dir: Optional[str] = None):
+        """初始化 SettingsService
+        
+        Args:
+            settings_dir: 設定檔目錄路徑。如果為 None,自動偵測正確路徑
+        """
+        if settings_dir is None:
+            # 自動偵測路徑: backend/data/settings
+            backend_dir = Path(__file__).parent
+            backend_settings = backend_dir / "data" / "settings"
+            project_settings = backend_dir.parent / "data" / "settings"
+            
+            if backend_settings.exists():
+                self.settings_dir = backend_settings
+            elif project_settings.exists():
+                self.settings_dir = project_settings
+            else:
+                # 預設建立在 backend/data/settings
+                self.settings_dir = backend_settings
+        else:
+            self.settings_dir = Path(settings_dir)
+        
         self.settings_file = self.settings_dir / "settings.json"
         self.ensure_settings_directory()
         
