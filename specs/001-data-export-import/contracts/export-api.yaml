@@ -1,0 +1,184 @@
+openapi: 3.0.3
+info:
+  title: Work Plan Export API
+  description: 資料匯出功能的 API 規格
+  version: 1.0.0
+  contact:
+    name: Work Plan by Calendar
+
+servers:
+  - url: http://localhost:8000/api
+    description: 本地開發環境
+
+paths:
+  /export/create:
+    post:
+      summary: 建立資料匯出檔案
+      description: |
+        將 backend/data 目錄下所有計畫資料壓縮為 ZIP 檔案。
+        檔案名稱格式: export_data_{YYYYMMDD_HHMMSS}.zip
+      operationId: createExport
+      tags:
+        - Export
+      responses:
+        '200':
+          description: 匯出成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResponse'
+              examples:
+                success:
+                  summary: 成功建立匯出檔案
+                  value:
+                    filename: export_data_20251025_143052.zip
+                    file_size: 2048576
+                    created_at: "2025-10-25T14:30:52+08:00"
+                    file_count: 245
+                    download_url: /api/export/download/export_data_20251025_143052.zip
+        '500':
+          description: 伺服器錯誤
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                disk_full:
+                  summary: 磁碟空間不足
+                  value:
+                    error: "匯出失敗: 磁碟空間不足"
+                    detail: "No space left on device"
+                    timestamp: "2025-10-25T14:30:52+08:00"
+                no_data:
+                  summary: 資料目錄為空
+                  value:
+                    error: "匯出失敗: backend/data 目錄不存在或為空"
+                    detail: "Directory not found: /app/backend/data"
+                    timestamp: "2025-10-25T14:30:52+08:00"
+
+  /export/download/{filename}:
+    get:
+      summary: 下載匯出的 ZIP 檔案
+      description: |
+        下載先前建立的匯出檔案。
+        檔案會在下載後自動設定適當的 Content-Disposition header。
+      operationId: downloadExport
+      tags:
+        - Export
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          description: 匯出檔案名稱
+          schema:
+            type: string
+            pattern: '^export_data_\d{8}_\d{6}\.zip$'
+          example: export_data_20251025_143052.zip
+      responses:
+        '200':
+          description: 檔案下載成功
+          headers:
+            Content-Disposition:
+              description: 附件下載標頭
+              schema:
+                type: string
+                example: 'attachment; filename="export_data_20251025_143052.zip"'
+            Content-Type:
+              description: MIME 類型
+              schema:
+                type: string
+                example: application/zip
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: 檔案不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: 檔案不存在
+                  value:
+                    error: "找不到指定的匯出檔案"
+                    detail: "File not found: export_data_20251025_143052.zip"
+                    timestamp: "2025-10-25T14:35:10+08:00"
+        '400':
+          description: 無效的檔案名稱
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_filename:
+                  summary: 檔案名稱格式錯誤
+                  value:
+                    error: "無效的檔案名稱格式"
+                    detail: "Expected format: export_data_YYYYMMDD_HHMMSS.zip"
+                    timestamp: "2025-10-25T14:35:10+08:00"
+
+components:
+  schemas:
+    ExportResponse:
+      type: object
+      required:
+        - filename
+        - file_size
+        - created_at
+        - file_count
+        - download_url
+      properties:
+        filename:
+          type: string
+          description: ZIP 檔案名稱
+          pattern: '^export_data_\d{8}_\d{6}\.zip$'
+          example: export_data_20251025_143052.zip
+        file_size:
+          type: integer
+          description: 檔案大小 (bytes)
+          minimum: 0
+          example: 2048576
+        created_at:
+          type: string
+          format: date-time
+          description: 建立時間 (ISO 8601)
+          example: "2025-10-25T14:30:52+08:00"
+        file_count:
+          type: integer
+          description: ZIP 中包含的檔案總數
+          minimum: 0
+          example: 245
+        download_url:
+          type: string
+          description: 下載端點的相對路徑
+          pattern: '^/api/export/download/export_data_\d{8}_\d{6}\.zip$'
+          example: /api/export/download/export_data_20251025_143052.zip
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: 使用者友善的錯誤訊息 (繁體中文)
+          example: "匯出失敗: 磁碟空間不足"
+        detail:
+          type: string
+          description: 技術細節 (選填,用於除錯)
+          example: "No space left on device"
+        timestamp:
+          type: string
+          format: date-time
+          description: 錯誤發生時間
+          example: "2025-10-25T14:30:52+08:00"
+
+  securitySchemes: {}
+
+tags:
+  - name: Export
+    description: 資料匯出相關操作
