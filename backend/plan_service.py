@@ -13,21 +13,12 @@ class PlanService:
         """初始化 PlanService
         
         Args:
-            data_dir: 資料目錄路徑。如果為 None,自動偵測正確路徑
+            data_dir: 資料目錄路徑。如果為 None,使用專案根目錄的 data
         """
         if data_dir is None:
-            # 自動偵測路徑: backend/data 或 project_root/data
+            # 預設使用專案根目錄的 data
             backend_dir = Path(__file__).parent
-            backend_data = backend_dir / "data"
-            project_data = backend_dir.parent / "data"
-            
-            if backend_data.exists():
-                self.data_dir = backend_data
-            elif project_data.exists():
-                self.data_dir = project_data
-            else:
-                # 預設建立在 backend/data
-                self.data_dir = backend_data
+            self.data_dir = backend_dir.parent / "data"
         else:
             self.data_dir = Path(data_dir)
         

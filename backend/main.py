@@ -53,8 +53,8 @@ if snapshot_dir.exists():
     app.mount("/snapshot", StaticFiles(directory=str(snapshot_dir), html=True), name="snapshot")
 
 # Initialize services with correct data directory
-# 使用 backend/data 作為資料目錄
-data_dir = project_root / "backend" / "data"
+# 使用專案根目錄的 data 作為資料目錄
+data_dir = project_root / "data"
 plan_service = PlanService(data_dir=str(data_dir))
 settings_service = SettingsService()
 

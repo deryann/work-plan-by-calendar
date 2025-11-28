@@ -12,21 +12,12 @@ class SettingsService:
         """初始化 SettingsService
         
         Args:
-            settings_dir: 設定檔目錄路徑。如果為 None,自動偵測正確路徑
+            settings_dir: 設定檔目錄路徑。如果為 None,使用專案根目錄的 data/settings
         """
         if settings_dir is None:
-            # 自動偵測路徑: backend/data/settings
+            # 預設使用專案根目錄的 data/settings
             backend_dir = Path(__file__).parent
-            backend_settings = backend_dir / "data" / "settings"
-            project_settings = backend_dir.parent / "data" / "settings"
-            
-            if backend_settings.exists():
-                self.settings_dir = backend_settings
-            elif project_settings.exists():
-                self.settings_dir = project_settings
-            else:
-                # 預設建立在 backend/data/settings
-                self.settings_dir = backend_settings
+            self.settings_dir = backend_dir.parent / "data" / "settings"
         else:
             self.settings_dir = Path(settings_dir)
         
