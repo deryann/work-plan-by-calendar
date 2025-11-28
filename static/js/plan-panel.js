@@ -10,6 +10,7 @@ class PlanPanel {
         this.onCopy = options.onCopy || (() => {});
         this.onNavigate = options.onNavigate || (() => {});
         this.layoutManager = options.layoutManager || null; // Reference to LayoutManager
+        this.settingsManager = options.settingsManager || null; // Reference to SettingsManager
 
         // Panel state
         this.isCollapsed = Utils.loadFromStorage(`panel-collapsed-${this.type}`, false);
@@ -299,23 +300,33 @@ class PlanPanel {
     onContentChange() {
         const currentContent = this.editorElement.value;
         this.isModified = currentContent !== this.originalContent;
-        
+
         if (this.isModified) {
             this.updateStatus('modified');
         } else {
             this.updateStatus('saved');
         }
 
-        // Auto-save with debounce
+        // Auto-save with debounce based on settings
         if (this.autoSaveTimeout) {
             clearTimeout(this.autoSaveTimeout);
         }
-        
-        this.autoSaveTimeout = setTimeout(() => {
-            if (this.isModified) {
-                this.saveContent();
-            }
-        }, 3000);
+
+        // Get auto-save settings
+        const autoSaveSettings = this.settingsManager
+            ? this.settingsManager.getAutoSaveSettings()
+            : { enabled: true, delay: 3 };
+
+        // Only set auto-save timeout if auto-save is enabled
+        if (autoSaveSettings.enabled) {
+            const delayMs = (autoSaveSettings.delay || 3) * 1000; // Convert seconds to milliseconds
+
+            this.autoSaveTimeout = setTimeout(() => {
+                if (this.isModified) {
+                    this.saveContent();
+                }
+            }, delayMs);
+        }
 
         // Update preview if in preview mode
         if (this.isPreviewMode) {

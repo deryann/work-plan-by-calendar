@@ -243,11 +243,12 @@ class WorkPlanApp {
 
             // Create new panel
             const newPanel = new PlanPanel({
-                type: planType  ,
+                type: planType,
                 date: Utils.getCanonicalDate(planType, this.currentDate),
                 isCurrent: true,
                 container: container.parentElement,
                 layoutManager: this.layoutManager, // Pass layoutManager reference
+                settingsManager: this.settingsManager, // Pass settingsManager reference
                 onSave: (type, date, plan) => {
                     this.onPlanSaved(type, date, plan, true);
                 },
@@ -322,6 +323,7 @@ class WorkPlanApp {
                 isCurrent: false,
                 container: container.parentElement,
                 layoutManager: this.layoutManager, // Pass layoutManager reference
+                settingsManager: this.settingsManager, // Pass settingsManager reference
                 onSave: (type, date, plan) => {
                     this.onPlanSaved(type, date, plan, false);
                 },

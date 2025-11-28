@@ -125,6 +125,22 @@ class SettingsModal {
             });
         }
 
+        // Auto-save enabled toggle
+        const autoSaveToggle = document.getElementById('autosave-enabled-toggle');
+        if (autoSaveToggle) {
+            autoSaveToggle.addEventListener('change', (e) => {
+                this.onAutoSaveEnabledChange(e);
+            });
+        }
+
+        // Auto-save delay input
+        const autoSaveDelayInput = document.getElementById('autosave-delay-input');
+        if (autoSaveDelayInput) {
+            autoSaveDelayInput.addEventListener('input', (e) => {
+                this.onAutoSaveDelayChange(e);
+            });
+        }
+
         // Click outside to close
         this.modal.addEventListener('click', (e) => {
             if (e.target === this.modal) {
@@ -271,6 +287,18 @@ class SettingsModal {
             }
         }
 
+        // Update auto-save settings
+        const autoSaveSettings = this.settingsManager.getAutoSaveSettings();
+        const autoSaveToggle = document.getElementById('autosave-enabled-toggle');
+        const autoSaveDelayInput = document.getElementById('autosave-delay-input');
+
+        if (autoSaveToggle) {
+            autoSaveToggle.checked = autoSaveSettings.enabled !== false;
+        }
+        if (autoSaveDelayInput) {
+            autoSaveDelayInput.value = autoSaveSettings.delay || 3;
+        }
+
         // Clear pending settings since we're loading current ones
         this.pendingSettings = null;
     }
@@ -324,7 +352,7 @@ class SettingsModal {
      */
     toggleTheme() {
         const newMode = this.settingsManager.toggleTheme();
-        
+
         // Update the radio buttons to reflect the change
         const lightRadio = document.getElementById('theme-light');
         const darkRadio = document.getElementById('theme-dark');
@@ -340,6 +368,57 @@ class SettingsModal {
         this.pendingSettings.ui.theme.mode = newMode;
 
         console.log(`Theme toggled to: ${newMode}`);
+    }
+
+    /**
+     * Handle auto-save enabled toggle change
+     */
+    onAutoSaveEnabledChange(event) {
+        const toggle = event.target;
+        const isEnabled = toggle.checked;
+
+        // Create or update pending settings
+        if (!this.pendingSettings) {
+            this.pendingSettings = JSON.parse(JSON.stringify(this.settingsManager.getSettings()));
+        }
+
+        // Update the pending auto-save enabled setting
+        if (!this.pendingSettings.ui.autoSave) {
+            this.pendingSettings.ui.autoSave = this.settingsManager.getDefaultSettings().ui.autoSave;
+        }
+        this.pendingSettings.ui.autoSave.enabled = isEnabled;
+
+        console.log(`Auto-save enabled changed to: ${isEnabled}`);
+    }
+
+    /**
+     * Handle auto-save delay input change
+     */
+    onAutoSaveDelayChange(event) {
+        const input = event.target;
+        let delay = parseInt(input.value, 10);
+
+        // Validate delay value
+        if (isNaN(delay) || delay < 1) {
+            delay = 1;
+            input.value = 1;
+        } else if (delay > 60) {
+            delay = 60;
+            input.value = 60;
+        }
+
+        // Create or update pending settings
+        if (!this.pendingSettings) {
+            this.pendingSettings = JSON.parse(JSON.stringify(this.settingsManager.getSettings()));
+        }
+
+        // Update the pending auto-save delay setting
+        if (!this.pendingSettings.ui.autoSave) {
+            this.pendingSettings.ui.autoSave = this.settingsManager.getDefaultSettings().ui.autoSave;
+        }
+        this.pendingSettings.ui.autoSave.delay = delay;
+
+        console.log(`Auto-save delay changed to: ${delay} seconds`);
     }
 
     /**

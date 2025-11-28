@@ -69,6 +69,10 @@ class SettingsManager {
                             titleText: '#ffffff'
                         }
                     }
+                },
+                autoSave: {
+                    enabled: true,
+                    delay: 3 // Auto-save delay in seconds
                 }
             }
         };
@@ -436,6 +440,34 @@ class SettingsManager {
     }
 
     /**
+     * Get auto-save settings
+     */
+    getAutoSaveSettings() {
+        try {
+            const settings = this.getSettings();
+            if (!settings || !settings.ui || !settings.ui.autoSave) {
+                return this.getDefaultSettings().ui.autoSave;
+            }
+            return settings.ui.autoSave;
+        } catch (error) {
+            console.warn('Error getting auto-save settings, using defaults:', error);
+            return this.getDefaultSettings().ui.autoSave;
+        }
+    }
+
+    /**
+     * Update auto-save settings
+     */
+    updateAutoSaveSettings(autoSaveSettings) {
+        const settings = this.getSettings();
+        if (!settings.ui.autoSave) {
+            settings.ui.autoSave = this.getDefaultSettings().ui.autoSave;
+        }
+        settings.ui.autoSave = { ...settings.ui.autoSave, ...autoSaveSettings };
+        return settings;
+    }
+
+    /**
      * Merge settings with defaults
      */
     mergeWithDefaults(settings) {
@@ -463,6 +495,9 @@ class SettingsManager {
                         Object.assign(merged.ui.theme.colors.dark, settings.ui.theme.colors.dark);
                     }
                 }
+            }
+            if (settings.ui.autoSave) {
+                Object.assign(merged.ui.autoSave, settings.ui.autoSave);
             }
         }
 

@@ -401,10 +401,39 @@
                         </div>
                     </div>
 
+                    <!-- Auto-Save Settings -->
+                    <div>
+                        <h4 class="text-md font-semibold text-gray-700 mb-4">自動儲存設定</h4>
+
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="autosave-enabled-toggle" class="autosave-toggle" checked>
+                                <span class="ml-2 text-sm text-gray-700">啟用自動儲存</span>
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1 ml-6">編輯內容後自動儲存變更</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="text-sm font-medium text-gray-600 mb-2">自動儲存延遲時間</h5>
+                            <div class="flex items-center space-x-2">
+                                <input
+                                    type="number"
+                                    id="autosave-delay-input"
+                                    class="px-3 py-1 border border-gray-300 rounded text-sm w-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    min="1"
+                                    max="60"
+                                    value="3"
+                                >
+                                <span class="text-sm text-gray-700">秒</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">內容變更後等待多久才自動儲存（1-60 秒）</p>
+                        </div>
+                    </div>
+
                     <!-- Data Management Settings -->
                     <div>
                         <h4 class="text-md font-semibold text-gray-700 mb-4">資料管理</h4>
-                        
+
                         <div class="mb-4">
                             <h5 class="text-sm font-medium text-gray-600 mb-2">匯出資料</h5>
                             <p class="text-xs text-gray-500 mb-2">將所有工作計畫資料匯出為 ZIP 壓縮檔</p>
