@@ -23,13 +23,38 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - TZ=Asia/Taipei
+      - LOG_LEVEL=info
+    # 自動重啟策略：
+    # - no: 不自動重啟
+    # - always: 總是重啟（包括手動停止）
+    # - on-failure: 只在非正常退出時重啟
+    # - unless-stopped: 總是重啟，除非手動停止（推薦）
     restart: unless-stopped
+
+    # 健康檢查配置
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      interval: 30s        # 每 30 秒檢查一次
+      timeout: 10s         # 檢查超時時間
+      retries: 3           # 連續失敗 3 次才認定為不健康
+      start_period: 40s    # 容器啟動後等待 40 秒才開始檢查
+
+    # 資源限制（防止容器佔用過多資源）
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'      # 最多使用 1 個 CPU 核心
+          memory: 512M     # 最多使用 512MB 記憶體
+        reservations:
+          cpus: '0.25'     # 保證至少 0.25 個 CPU 核心
+          memory: 128M     # 保證至少 128MB 記憶體
+
+    # 日誌配置（防止日誌檔案過大）
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"    # 單個日誌檔案最大 10MB
+        max-file: "3"      # 最多保留 3 個日誌檔案
 
 networks:
   default:

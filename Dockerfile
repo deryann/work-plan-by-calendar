@@ -36,6 +36,12 @@ ARG PROJECT_NAME
 
 WORKDIR /app
 
+# 安裝 curl 用於健康檢查
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 # 從建構階段複製虛擬環境
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
