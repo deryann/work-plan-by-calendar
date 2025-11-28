@@ -222,3 +222,45 @@ class PlanService:
         file_path_str = DateCalculator.get_file_path(plan_type, canonical_date, str(self.data_dir))
         file_path = Path(file_path_str)
         return file_path.exists() and file_path.stat().st_size > 0
+
+    def get_plans_existence(self, start_date: date, end_date: date) -> dict:
+        """取得日期範圍內的計畫存在狀態
+
+        Args:
+            start_date: 開始日期
+            end_date: 結束日期
+
+        Returns:
+            字典，key 為日期字串 (YYYY-MM-DD)，value 為包含各計畫類型存在狀態的字典
+            例如: {
+                "2025-01-01": {"year": True, "month": True, "week": False, "day": True},
+                "2025-01-02": {"year": True, "month": True, "week": False, "day": False},
+                ...
+            }
+        """
+        result = {}
+        current_date = start_date
+
+        while current_date <= end_date:
+            date_str = current_date.strftime("%Y-%m-%d")
+
+            # Get all plan dates for this date
+            plan_dates = DateCalculator.get_all_plan_dates_for_date(current_date)
+
+            # Check existence for each plan type
+            existence_status = {}
+            for plan_type_str in ["year", "month", "week", "day"]:
+                try:
+                    plan_type = PlanType(plan_type_str)
+                    plan_date = plan_dates[plan_type_str]
+                    existence_status[plan_type_str] = self.plan_exists(plan_type, plan_date)
+                except Exception:
+                    existence_status[plan_type_str] = False
+
+            result[date_str] = existence_status
+
+            # Move to next day
+            from datetime import timedelta
+            current_date = current_date + timedelta(days=1)
+
+        return result

@@ -471,6 +471,74 @@
         </div>
     </div>
 
+    <!-- Calendar Quick View Modal -->
+    <div id="calendar-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 calendar-modal-backdrop flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 calendar-modal-content">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <h3 class="text-lg font-semibold text-gray-800">計劃月曆快速檢視</h3>
+                    <div class="flex items-center space-x-2">
+                        <button id="calendar-prev-month" class="nav-btn" title="上個月">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <span id="calendar-month-year" class="text-md font-medium text-gray-700 min-w-32 text-center"></span>
+                        <button id="calendar-next-month" class="nav-btn" title="下個月">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                        <button id="calendar-today" class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors ml-2">
+                            今天
+                        </button>
+                    </div>
+                </div>
+                <button id="calendar-modal-close" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="px-6 py-4">
+                <div id="calendar-grid" class="calendar-grid">
+                    <!-- Calendar will be rendered here by JavaScript -->
+                </div>
+
+                <!-- Legend -->
+                <div class="mt-4 flex items-center justify-center space-x-6 text-sm">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                        <span class="text-gray-600">年計劃</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-gray-600">月計劃</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <span class="text-gray-600">週計劃</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <span class="text-gray-600">日計劃</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-3 border-t rounded-b-lg" style="background-color: var(--color-secondary); border-color: var(--color-border);">
+                <div class="text-xs text-center" style="color: var(--color-text-secondary);">
+                    按 <span class="px-1 rounded font-mono" style="background-color: var(--color-border);">Ctrl+K</span> 或
+                    <span class="px-1 rounded font-mono" style="background-color: var(--color-border);">Esc</span> 關閉月曆
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Splash Screen Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -515,6 +583,7 @@
     <script src="/static/js/about-modal.js"></script>
     <script src="/static/js/settings-manager.js"></script>
     <script src="/static/js/settings-modal.js"></script>
+    <script src="/static/js/calendar-modal.js"></script>
     <script src="/static/js/app.js"></script>
 </body>
 </html>

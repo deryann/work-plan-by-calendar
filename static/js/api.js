@@ -159,6 +159,21 @@ class PlanAPI {
     }
 
     /**
+     * Get plan existence status for a date range
+     * @param {string} startDate - Start date in YYYY-MM-DD format
+     * @param {string} endDate - End date in YYYY-MM-DD format
+     * @returns {Promise<object>} Object with date keys and plan type flags
+     */
+    async getPlansExistence(startDate, endDate) {
+        try {
+            return await this.request(`/plans/existence?start_date=${startDate}&end_date=${endDate}`);
+        } catch (error) {
+            console.error('Failed to get plans existence:', error);
+            return {};
+        }
+    }
+
+    /**
      * Get all settings
      * @returns {Promise<object>} Settings object
      */

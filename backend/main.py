@@ -302,6 +302,43 @@ async def check_plan_exists(plan_type: PlanType, plan_date: date):
         )
 
 
+# Plans existence for date range endpoint
+@app.get("/api/plans/existence")
+async def get_plans_existence(start_date: date, end_date: date):
+    """取得日期範圍內的計畫存在狀態"""
+    try:
+        # Check if date range is valid
+        if start_date > end_date:
+            raise ValueError("Start date must be before or equal to end date")
+
+        # Limit the date range to prevent excessive queries (max 60 days)
+        delta = (end_date - start_date).days
+        if delta > 60:
+            raise ValueError("Date range cannot exceed 60 days")
+
+        # Get plans existence for the date range
+        result = plan_service.get_plans_existence(start_date, end_date)
+        return result
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorResponse(
+                error="INVALID_DATE_RANGE",
+                message=str(e),
+                details={"start_date": str(start_date), "end_date": str(end_date)}
+            ).dict()
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="PLANS_EXISTENCE_ERROR",
+                message=f"Failed to get plans existence: {str(e)}",
+                details={"start_date": str(start_date), "end_date": str(end_date)}
+            ).dict()
+        )
+
+
 # Settings endpoints
 @app.get("/api/settings", response_model=Settings)
 async def get_settings():

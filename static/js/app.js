@@ -67,6 +67,9 @@ class WorkPlanApp {
         // Initialize settings modal
         this.settingsModal = new SettingsModal(this.settingsManager);
 
+        // Initialize calendar modal
+        this.calendarModal = new CalendarModal(this);
+
         // Initialize layout manager
         this.layoutManager = new LayoutManager();
 
