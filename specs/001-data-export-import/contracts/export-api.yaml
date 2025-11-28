@@ -15,7 +15,7 @@ paths:
     post:
       summary: 建立資料匯出檔案
       description: |
-        將 backend/data 目錄下所有計畫資料壓縮為 ZIP 檔案。
+        將 data 目錄下所有計畫資料壓縮為 ZIP 檔案。
         檔案名稱格式: export_data_{YYYYMMDD_HHMMSS}.zip
       operationId: createExport
       tags:
@@ -52,8 +52,8 @@ paths:
                 no_data:
                   summary: 資料目錄為空
                   value:
-                    error: "匯出失敗: backend/data 目錄不存在或為空"
-                    detail: "Directory not found: /app/backend/data"
+                    error: "匯出失敗: data 目錄不存在或為空"
+                    detail: "Directory not found: /app/data"
                     timestamp: "2025-10-25T14:30:52+08:00"
 
   /export/download/{filename}:

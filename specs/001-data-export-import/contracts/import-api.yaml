@@ -129,7 +129,7 @@ paths:
     post:
       summary: 執行資料匯入
       description: |
-        將已驗證的 ZIP 檔案內容匯入到 backend/data 目錄。
+        將已驗證的 ZIP 檔案內容匯入到 data 目錄。
         注意事項:
         - 建議先呼叫 /import/validate 確認格式正確
         - 同名檔案會被直接覆蓋
