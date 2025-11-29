@@ -1,4 +1,5 @@
 # Python
+google_client_secret.json
 __pycache__/
 *.py[cod]
 *$py.class
