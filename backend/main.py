@@ -18,7 +18,8 @@ from backend.models import (
     CopyRequest, ErrorResponse, Settings, UISettings, SettingsUpdate,
     ExportResponse, ImportValidation, ImportSuccessResponse,
     GoogleAuthInfo, GoogleAuthCallbackRequest, StorageStatusResponse,
-    GoogleDrivePathUpdateRequest, StorageMode, StorageModeType
+    GoogleDrivePathUpdateRequest, StorageMode, StorageModeType,
+    StorageModeUpdateRequest, GoogleAuthStatus
 )
 from backend.plan_service import PlanService
 from backend.settings_service import SettingsService
@@ -621,6 +622,78 @@ async def update_google_drive_path(request: GoogleDrivePathUpdateRequest):
             detail=ErrorResponse(
                 error="PATH_UPDATE_ERROR",
                 message=f"更新路徑失敗: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.put("/api/storage/mode", response_model=StorageStatusResponse)
+async def update_storage_mode(request: StorageModeUpdateRequest):
+    """切換儲存模式
+    
+    Args:
+        request: 包含新儲存模式的請求物件
+        
+    Returns:
+        更新後的儲存狀態
+        
+    Raises:
+        400: 切換到 Google Drive 模式但未授權
+    """
+    try:
+        # 如果切換到 Google Drive 模式，需要驗證授權狀態
+        if request.mode == StorageModeType.GOOGLE_DRIVE:
+            auth_status = google_auth_service.get_auth_status()
+            if auth_status.status != GoogleAuthStatus.CONNECTED:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=ErrorResponse(
+                        error="GOOGLE_NOT_CONNECTED",
+                        message="請先連結 Google 帳號才能切換到 Google Drive 模式",
+                        details={"current_auth_status": auth_status.status.value}
+                    ).dict()
+                )
+        
+        # 更新儲存模式
+        storage_mode = StorageMode(
+            mode=request.mode,
+            google_drive_path=request.google_drive_path or settings_service.get_storage_mode().google_drive_path
+        )
+        settings_service.update_storage_mode(storage_mode)
+        
+        # 動態切換 PlanService 的 StorageProvider
+        plan_service.switch_storage_provider(request.mode)
+        
+        # 回傳更新後的狀態
+        auth_status = google_auth_service.get_auth_status()
+        is_ready = True
+        if request.mode == StorageModeType.GOOGLE_DRIVE:
+            is_ready = auth_status.status == GoogleAuthStatus.CONNECTED
+        
+        return StorageStatusResponse(
+            mode=storage_mode.mode,
+            google_drive_path=storage_mode.google_drive_path,
+            google_auth=auth_status,
+            is_ready=is_ready
+        )
+        
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorResponse(
+                error="INVALID_MODE",
+                message=str(e),
+                details={}
+            ).dict()
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="MODE_UPDATE_ERROR",
+                message=f"切換儲存模式失敗: {str(e)}",
                 details={}
             ).dict()
         )

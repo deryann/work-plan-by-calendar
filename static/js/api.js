@@ -376,6 +376,23 @@ class PlanAPI {
             body: JSON.stringify({ path })
         });
     }
+
+    /**
+     * Update storage mode
+     * @param {string} mode - Storage mode ('local' or 'google_drive')
+     * @param {string} [googleDrivePath] - Optional Google Drive path
+     * @returns {Promise<object>} Updated storage status
+     */
+    async updateStorageMode(mode, googleDrivePath = null) {
+        const body = { mode };
+        if (googleDrivePath) {
+            body.google_drive_path = googleDrivePath;
+        }
+        return await this.request('/storage/mode', {
+            method: 'PUT',
+            body: JSON.stringify(body)
+        });
+    }
 }
 
 // API client singleton
@@ -393,5 +410,6 @@ window.api = {
     googleLogout: () => planAPI.googleLogout(),
     refreshGoogleToken: () => planAPI.refreshGoogleToken(),
     getStorageStatus: () => planAPI.getStorageStatus(),
-    updateGoogleDrivePath: (path) => planAPI.updateGoogleDrivePath(path)
+    updateGoogleDrivePath: (path) => planAPI.updateGoogleDrivePath(path),
+    updateStorageMode: (mode, googleDrivePath) => planAPI.updateStorageMode(mode, googleDrivePath)
 };

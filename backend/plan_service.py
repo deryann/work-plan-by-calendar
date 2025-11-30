@@ -2,7 +2,7 @@ import os
 from datetime import datetime, date
 from pathlib import Path
 from typing import Optional, Union
-from .models import Plan, PlanType, AllPlans, CopyRequest, CopyMode
+from .models import Plan, PlanType, AllPlans, CopyRequest, CopyMode, StorageModeType
 from .date_calculator import DateCalculator
 from .storage import StorageProvider, LocalStorageProvider
 
@@ -279,3 +279,37 @@ class PlanService:
             current_date = current_date + timedelta(days=1)
 
         return result
+    
+    def switch_storage_provider(self, mode: StorageModeType, google_drive_path: Optional[str] = None) -> None:
+        """動態切換儲存提供者
+        
+        Args:
+            mode: 儲存模式類型
+            google_drive_path: Google Drive 路徑（僅 google_drive 模式使用）
+            
+        Note:
+            此方法用於在執行期間切換儲存後端。
+            切換到 Google Drive 模式時，需要確保已正確授權。
+        """
+        if mode == StorageModeType.LOCAL:
+            # 切換回本地儲存
+            self.storage = LocalStorageProvider(str(self.data_dir))
+        elif mode == StorageModeType.GOOGLE_DRIVE:
+            # 切換到 Google Drive 儲存
+            # 注意：GoogleDriveStorageProvider 將在 Phase 7 實作
+            # 目前暫時使用佔位實作
+            try:
+                from .storage import GoogleDriveStorageProvider
+                self.storage = GoogleDriveStorageProvider(
+                    base_path=google_drive_path or "WorkPlanByCalendar"
+                )
+            except ImportError:
+                # GoogleDriveStorageProvider 尚未實作
+                raise NotImplementedError(
+                    "Google Drive 儲存模式尚未完全實作，將在後續版本支援"
+                )
+        else:
+            raise ValueError(f"不支援的儲存模式: {mode}")
+        
+        # 確保目錄結構存在
+        self._ensure_directories_exist()

@@ -163,19 +163,19 @@
 
 ### 後端實作
 
-- [ ] T059 [US4] 新增 PUT /api/storage/mode 端點於 backend/main.py
-- [ ] T060 [US4] 實作儲存模式切換邏輯（驗證 Google 授權狀態）於 backend/settings_service.py
-- [ ] T061 [US4] 更新 PlanService 支援動態切換 StorageProvider 於 backend/plan_service.py
+- [x] T059 [US4] 新增 PUT /api/storage/mode 端點於 backend/main.py
+- [x] T060 [US4] 實作儲存模式切換邏輯（驗證 Google 授權狀態）於 backend/settings_service.py
+- [x] T061 [US4] 更新 PlanService 支援動態切換 StorageProvider 於 backend/plan_service.py
 
 ### 前端實作
 
-- [ ] T062 [US4] 新增儲存模式切換 API 方法至 static/js/api.js (updateStorageMode)
-- [ ] T063 [US4] 在設定彈窗新增儲存模式切換 UI（單選按鈕或下拉選單）於 static/js/settings-modal.js
-- [ ] T064 [US4] 實作切換確認對話框於 static/js/settings-modal.js
-- [ ] T065 [US4] 在主介面顯示當前儲存模式狀態指示器於 static/js/app.js
-- [ ] T066 [P] [US4] 新增儲存模式狀態指示器 CSS 樣式於 static/css/main.css
+- [x] T062 [US4] 新增儲存模式切換 API 方法至 static/js/api.js (updateStorageMode)
+- [x] T063 [US4] 在設定彈窗新增儲存模式切換 UI（單選按鈕或下拉選單）於 static/js/settings-modal.js
+- [x] T064 [US4] 實作切換確認對話框於 static/js/settings-modal.js
+- [x] T065 [US4] 在主介面顯示當前儲存模式狀態指示器於 static/js/app.js
+- [x] T066 [P] [US4] 新增儲存模式狀態指示器 CSS 樣式於 static/css/main.css
 
-**Checkpoint**: User Story 4 完成 - 使用者可切換儲存模式，UI 正確反映當前模式
+**Checkpoint**: User Story 4 完成 - 使用者可切換儲存模式，UI 正確反映當前模式 ✅
 
 ---
 

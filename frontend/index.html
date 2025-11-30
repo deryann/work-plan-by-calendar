@@ -67,6 +67,22 @@
                     </button>
                     
                     <!-- Theme Toggle Button -->
+                    <!-- Storage Mode Indicator (002-google-drive-storage) -->
+                    <div 
+                        id="storage-mode-indicator"
+                        class="storage-mode-indicator storage-local flex items-center space-x-1 px-2 py-1 rounded text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                        title="本地儲存模式"
+                        onclick="app?.settingsModal?.show()"
+                    >
+                        <span class="storage-mode-icon">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                    d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                            </svg>
+                        </span>
+                        <span class="storage-mode-text">本地</span>
+                    </div>
+                    
                     <button 
                         id="header-theme-toggle" 
                         class="nav-btn" 
@@ -506,6 +522,41 @@
                                 </div>
                                 <p id="google-drive-path-error" class="mt-1 text-xs text-red-500" style="display: none;"></p>
                                 <p class="text-xs text-gray-500 mt-1">資料將儲存在「我的雲端硬碟 / {路徑}」</p>
+                                
+                                <!-- Storage Mode Switch -->
+                                <div class="mt-4 pt-4 border-t border-gray-200">
+                                    <h5 class="text-sm font-medium text-gray-600 mb-3">儲存模式</h5>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center space-x-3 cursor-pointer">
+                                            <input 
+                                                type="radio" 
+                                                id="storage-mode-local" 
+                                                name="storage-mode" 
+                                                value="local" 
+                                                class="storage-mode-radio w-4 h-4 text-blue-600"
+                                                checked
+                                            >
+                                            <span class="text-sm text-gray-700">
+                                                <span class="font-medium">本地儲存</span>
+                                                <span class="text-gray-500">（資料儲存在本機）</span>
+                                            </span>
+                                        </label>
+                                        <label for="storage-mode-google-drive" class="flex items-center space-x-3 cursor-pointer">
+                                            <input 
+                                                type="radio" 
+                                                id="storage-mode-google-drive" 
+                                                name="storage-mode" 
+                                                value="google_drive" 
+                                                class="storage-mode-radio w-4 h-4 text-blue-600"
+                                            >
+                                            <span class="text-sm text-gray-700">
+                                                <span class="font-medium">Google Drive</span>
+                                                <span class="text-gray-500">（資料同步到雲端）</span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">切換模式後，系統將使用選定的儲存位置讀寫計畫資料</p>
+                                </div>
                             </div>
                         </div>
                     </div>

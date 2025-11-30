@@ -149,6 +149,14 @@ class SettingsModal {
             });
         }
 
+        // Storage mode radio buttons (002-google-drive-storage)
+        const storageModeRadios = document.querySelectorAll('.storage-mode-radio');
+        storageModeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.handleStorageModeChange(e.target.value);
+            });
+        });
+
         // Panel toggle checkboxes
         const toggles = document.querySelectorAll('.panel-toggle');
         toggles.forEach(toggle => {
@@ -756,6 +764,7 @@ class SettingsModal {
         try {
             this.storageStatus = await window.planAPI.getStorageStatus();
             this.updateStorageUI();
+            this.updateStorageModeUI();
         } catch (error) {
             console.error('Failed to load storage status:', error);
             this.storageStatus = null;
@@ -899,6 +908,138 @@ class SettingsModal {
             Utils.hideLoading();
             console.error('Failed to save Google Drive path:', error);
             Utils.showError('儲存失敗: ' + error.message);
+        }
+    }
+
+    /**
+     * Handle storage mode change
+     * @param {string} newMode - New storage mode ('local' or 'google_drive')
+     */
+    async handleStorageModeChange(newMode) {
+        const currentMode = this.storageStatus?.mode || 'local';
+        
+        // If no change, do nothing
+        if (newMode === currentMode) {
+            return;
+        }
+
+        // If switching to Google Drive, check auth status
+        if (newMode === 'google_drive') {
+            if (this.googleAuthStatus?.status !== 'connected') {
+                Utils.showError('請先連結 Google 帳號才能切換到 Google Drive 模式');
+                // Reset radio button
+                this.updateStorageModeUI();
+                return;
+            }
+            
+            // Show confirmation dialog
+            if (!await this.confirmStorageModeSwitch('google_drive')) {
+                this.updateStorageModeUI();
+                return;
+            }
+        } else if (currentMode === 'google_drive') {
+            // Switching from Google Drive to local
+            if (!await this.confirmStorageModeSwitch('local')) {
+                this.updateStorageModeUI();
+                return;
+            }
+        }
+
+        // Execute mode switch
+        await this.executeStorageModeSwitch(newMode);
+    }
+
+    /**
+     * Confirm storage mode switch
+     * @param {string} targetMode - Target storage mode
+     * @returns {Promise<boolean>} User confirmation result
+     */
+    async confirmStorageModeSwitch(targetMode) {
+        let message;
+        
+        if (targetMode === 'google_drive') {
+            message = `確定要切換到 Google Drive 模式嗎？\n\n` +
+                `切換後：\n` +
+                `• 計畫資料將儲存到 Google Drive\n` +
+                `• 需要網路連線才能存取資料\n` +
+                `• 現有本地資料不會自動同步`;
+        } else {
+            message = `確定要切換回本地模式嗎？\n\n` +
+                `切換後：\n` +
+                `• 計畫資料將儲存在本機\n` +
+                `• Google Drive 上的資料不會自動同步到本機`;
+        }
+        
+        return confirm(message);
+    }
+
+    /**
+     * Execute storage mode switch
+     * @param {string} newMode - New storage mode
+     */
+    async executeStorageModeSwitch(newMode) {
+        try {
+            Utils.showLoading('正在切換儲存模式...');
+            
+            const googleDrivePath = this.storageStatus?.google_drive_path;
+            const result = await window.planAPI.updateStorageMode(newMode, googleDrivePath);
+            
+            // Update local state
+            this.storageStatus = result;
+            this.updateStorageModeUI();
+            this.updateStorageUI();
+            
+            Utils.hideLoading();
+            
+            const modeText = newMode === 'google_drive' ? 'Google Drive' : '本地';
+            Utils.showSuccess(`已切換到${modeText}模式`);
+            
+            // Dispatch event for other components to react
+            window.dispatchEvent(new CustomEvent('storage-mode-changed', {
+                detail: { mode: newMode, status: result }
+            }));
+            
+        } catch (error) {
+            Utils.hideLoading();
+            console.error('Storage mode switch failed:', error);
+            
+            // Reset UI to current state
+            this.updateStorageModeUI();
+            
+            // Show appropriate error message
+            if (error.message.includes('尚未完全實作')) {
+                Utils.showError('Google Drive 功能尚在開發中，敬請期待！');
+            } else {
+                Utils.showError('切換儲存模式失敗: ' + error.message);
+            }
+        }
+    }
+
+    /**
+     * Update storage mode UI
+     */
+    updateStorageModeUI() {
+        const currentMode = this.storageStatus?.mode || 'local';
+        const localRadio = document.getElementById('storage-mode-local');
+        const googleDriveRadio = document.getElementById('storage-mode-google-drive');
+
+        if (localRadio) {
+            localRadio.checked = currentMode === 'local';
+        }
+        if (googleDriveRadio) {
+            googleDriveRadio.checked = currentMode === 'google_drive';
+            // Disable Google Drive option if not connected
+            const isConnected = this.googleAuthStatus?.status === 'connected';
+            googleDriveRadio.disabled = !isConnected;
+            
+            const label = document.querySelector('label[for="storage-mode-google-drive"]');
+            if (label) {
+                if (isConnected) {
+                    label.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    label.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            }
         }
     }
 }
