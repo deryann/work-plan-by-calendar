@@ -717,6 +717,14 @@ class SettingsModal {
 
         // Update storage UI when auth status changes
         this.updateStorageUI();
+    }
+
+    /**
+     * Handle Google account connection
+     */
+    async handleGoogleConnect() {
+        try {
+            Utils.showLoading('正在連結 Google 帳號...');
 
             const result = await window.googleAuthManager.startAuth();
             

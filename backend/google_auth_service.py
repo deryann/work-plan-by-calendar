@@ -146,6 +146,16 @@ class GoogleAuthService:
         # 確保目錄存在
         self.token_path.parent.mkdir(parents=True, exist_ok=True)
     
+    @property
+    def client_id(self) -> Optional[str]:
+        """取得 Google OAuth Client ID"""
+        return self._client_id
+    
+    @property
+    def client_secret(self) -> Optional[str]:
+        """取得 Google OAuth Client Secret"""
+        return self._client_secret
+    
     def _get_client_config(self) -> dict:
         """取得 OAuth Client 設定"""
         if not self._client_id or not self._client_secret:

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, status, Request, UploadFile, File, Query
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import date, datetime
 from typing import Optional
@@ -780,6 +780,127 @@ async def get_google_auth_url(redirect_uri: str = Query(..., description="OAuth 
                 details={}
             ).dict()
         )
+
+
+@app.get("/api/auth/google/callback", response_class=HTMLResponse)
+async def google_auth_callback_get(code: str = Query(...), state: str = Query(None)):
+    """處理 Google OAuth GET 回調
+    
+    當使用者在 Google 授權頁面完成授權後，Google 會以 GET 方式重新導向到此端點，
+    並帶上 authorization code。此端點會顯示一個中繼頁面，使用 JavaScript 將 code
+    傳送給父視窗，然後關閉授權視窗。
+    """
+    # 回傳一個 HTML 頁面，用 JavaScript 處理 OAuth 回調
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Google 授權中...</title>
+        <style>
+            body {{
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                background-color: #f5f5f5;
+            }}
+            .container {{
+                text-align: center;
+                padding: 40px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }}
+            .spinner {{
+                width: 40px;
+                height: 40px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #3b82f6;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 20px;
+            }}
+            @keyframes spin {{
+                0% {{ transform: rotate(0deg); }}
+                100% {{ transform: rotate(360deg); }}
+            }}
+            .success {{
+                color: #10b981;
+            }}
+            .error {{
+                color: #ef4444;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="spinner" id="spinner"></div>
+            <h2 id="status">正在完成授權...</h2>
+            <p id="message">請稍候，正在處理您的 Google 授權...</p>
+        </div>
+        
+        <script>
+            const code = "{code}";
+            const redirectUri = window.location.origin + '/api/auth/google/callback';
+            
+            async function completeAuth() {{
+                try {{
+                    // 呼叫後端 POST API 完成授權
+                    const response = await fetch('/api/auth/google/callback', {{
+                        method: 'POST',
+                        headers: {{
+                            'Content-Type': 'application/json'
+                        }},
+                        body: JSON.stringify({{
+                            code: code,
+                            redirect_uri: redirectUri
+                        }})
+                    }});
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {{
+                        document.getElementById('spinner').style.display = 'none';
+                        document.getElementById('status').textContent = '授權成功！';
+                        document.getElementById('status').className = 'success';
+                        document.getElementById('message').textContent = '您可以關閉此視窗，或稍後會自動關閉...';
+                        
+                        // 嘗試通知父視窗
+                        if (window.opener) {{
+                            window.opener.postMessage({{ type: 'google-auth-success', data: result }}, window.location.origin);
+                        }}
+                        
+                        // 2秒後自動關閉視窗
+                        setTimeout(() => {{
+                            window.close();
+                        }}, 2000);
+                    }} else {{
+                        throw new Error(result.detail?.message || '授權失敗');
+                    }}
+                }} catch (error) {{
+                    document.getElementById('spinner').style.display = 'none';
+                    document.getElementById('status').textContent = '授權失敗';
+                    document.getElementById('status').className = 'error';
+                    document.getElementById('message').textContent = error.message || '發生未知錯誤，請關閉此視窗重試';
+                    
+                    // 通知父視窗錯誤
+                    if (window.opener) {{
+                        window.opener.postMessage({{ type: 'google-auth-error', error: error.message }}, window.location.origin);
+                    }}
+                }}
+            }}
+            
+            // 頁面載入後執行授權
+            completeAuth();
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 
 @app.post("/api/auth/google/callback", response_model=GoogleAuthInfo)

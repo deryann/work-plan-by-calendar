@@ -122,10 +122,10 @@ https://your-domain.com
 在「已授權的重新導向 URI」新增：
 
 ```
-http://localhost:8000/frontend/
+http://localhost:8000/api/auth/google/callback
 ```
 
-**注意**：URI 結尾的斜線 `/` 必須完全匹配！
+**注意**：此 URI 必須與應用程式中的回調路徑完全匹配！
 
 ### 下載憑證
 
@@ -224,7 +224,7 @@ uv run python start_server.py
 
 **解決方法**：
 1. 檢查 Google Cloud Console 中設定的重新導向 URI
-2. 確保與應用程式使用的 URL 完全匹配（包括結尾的 `/`）
+2. 確保 URI 設定為：`http://localhost:8000/api/auth/google/callback`
 3. 注意 `http` 和 `https` 的區別
 
 ### Q: 出現「Error 400: redirect_uri_mismatch」錯誤
