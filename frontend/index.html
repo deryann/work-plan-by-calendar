@@ -326,10 +326,10 @@
 
     <!-- Settings Modal -->
     <div id="settings-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 settings-modal-backdrop flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 settings-modal-content">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 settings-modal-content" style="background-color: var(--color-primary);">
             <!-- Modal Header -->
-            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-gray-800">應用程式設定</h3>
+            <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color: var(--color-border);">
+                <h3 class="text-lg font-semibold" style="color: var(--color-title-text);">應用程式設定</h3>
                 <button id="settings-modal-close" class="text-gray-400 hover:text-gray-600 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -337,237 +337,311 @@
                 </button>
             </div>
             
-            <!-- Modal Content -->
-            <div class="px-6 py-4 max-h-96 overflow-y-auto custom-scrollbar">
-                <div class="space-y-6">
-                    <!-- Theme Settings -->
-                    <div>
-                        <h4 class="text-md font-semibold text-gray-700 mb-4">主題設定</h4>
-                        
-                        <div class="mb-4">
-                            <h5 class="text-sm font-medium text-gray-600 mb-2">配色模式</h5>
-                            <div class="space-y-2">
-                                <label class="flex items-center">
+            <!-- Tab Navigation -->
+            <div class="flex border-b" style="border-color: var(--color-border);">
+                <button class="settings-tab active px-4 py-3 text-sm font-medium transition-colors flex items-center space-x-2" data-tab="appearance">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                    </svg>
+                    <span>外觀</span>
+                </button>
+                <button class="settings-tab px-4 py-3 text-sm font-medium transition-colors flex items-center space-x-2" data-tab="panels">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                    </svg>
+                    <span>面板</span>
+                </button>
+                <button class="settings-tab px-4 py-3 text-sm font-medium transition-colors flex items-center space-x-2" data-tab="data">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+                    </svg>
+                    <span>資料</span>
+                </button>
+                <button class="settings-tab px-4 py-3 text-sm font-medium transition-colors flex items-center space-x-2" data-tab="cloud">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                    </svg>
+                    <span>雲端</span>
+                </button>
+            </div>
+            
+            <!-- Tab Content Container -->
+            <div class="settings-tab-content-container" style="height: 340px;">
+                <!-- Tab 1: Appearance Settings -->
+                <div id="settings-tab-appearance" class="settings-tab-content active px-6 py-4 h-full overflow-y-auto custom-scrollbar">
+                    <div class="space-y-5">
+                        <!-- Theme Mode -->
+                        <div>
+                            <h4 class="text-sm font-semibold mb-3" style="color: var(--color-title-text);">配色模式</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center p-3 rounded-lg border cursor-pointer transition-all hover:border-blue-400" style="border-color: var(--color-border); background-color: var(--color-secondary);">
                                     <input type="radio" name="theme-mode" value="light" id="theme-light" class="theme-mode-radio" checked>
-                                    <span class="ml-2 text-sm text-gray-700">淺色模式</span>
+                                    <div class="ml-3">
+                                        <span class="block text-sm font-medium" style="color: var(--color-text);">☀️ 淺色模式</span>
+                                        <span class="text-xs" style="color: var(--color-text-secondary);">明亮舒適的介面</span>
+                                    </div>
                                 </label>
-                                <label class="flex items-center">
+                                <label class="flex items-center p-3 rounded-lg border cursor-pointer transition-all hover:border-blue-400" style="border-color: var(--color-border); background-color: var(--color-secondary);">
                                     <input type="radio" name="theme-mode" value="dark" id="theme-dark" class="theme-mode-radio">
-                                    <span class="ml-2 text-sm text-gray-700">深色模式</span>
+                                    <div class="ml-3">
+                                        <span class="block text-sm font-medium" style="color: var(--color-text);">🌙 深色模式</span>
+                                        <span class="text-xs" style="color: var(--color-text-secondary);">護眼暗色主題</span>
+                                    </div>
                                 </label>
                             </div>
+                            <div class="mt-3">
+                                <button id="theme-toggle-btn" class="px-4 py-2 text-sm rounded transition-colors flex items-center space-x-2" style="background-color: var(--color-secondary); color: var(--color-text); border: 1px solid var(--color-border);">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    <span>快速切換主題</span>
+                                </button>
+                            </div>
                         </div>
-                        
-                        <div class="mb-4">
-                            <h5 class="text-sm font-medium text-gray-600 mb-2">快速切換</h5>
-                            <button id="theme-toggle-btn" class="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors">
-                                切換主題
-                            </button>
-                        </div>
-                    </div>
 
-                    <!-- UI Panel Settings -->
-                    <div>
-                        <h4 class="text-md font-semibold text-gray-700 mb-4">面板顯示設定</h4>
-                        
+                    </div>
+                </div>
+
+                <!-- Tab 2: Panel Settings -->
+                <div id="settings-tab-panels" class="settings-tab-content px-6 py-4 h-full overflow-y-auto custom-scrollbar" style="display: none;">
+                    <div class="grid grid-cols-2 gap-6">
                         <!-- Left Panel Settings -->
-                        <div class="mb-4">
-                            <h5 class="text-sm font-medium text-gray-600 mb-2">左側面板 (歷史計畫)</h5>
+                        <div>
+                            <h4 class="text-sm font-semibold mb-3 flex items-center" style="color: var(--color-title-text);">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+                                </svg>
+                                左側面板（歷史計畫）
+                            </h4>
                             <div class="space-y-2">
-                                <label class="flex items-center">
-                                    <input type="checkbox" id="left-year-toggle" class="panel-toggle" data-panel="left" data-type="year" checked>
-                                    <span class="ml-2 text-sm text-gray-700">年計畫</span>
+                                <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all hover:bg-opacity-80" style="background-color: var(--color-secondary);">
+                                    <span class="text-sm" style="color: var(--color-text);">📅 年計畫</span>
+                                    <input type="checkbox" id="left-year-toggle" class="panel-toggle w-4 h-4 rounded" data-panel="left" data-type="year" checked>
                                 </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" id="left-month-toggle" class="panel-toggle" data-panel="left" data-type="month" checked>
-                                    <span class="ml-2 text-sm text-gray-700">月計畫</span>
+                                <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all hover:bg-opacity-80" style="background-color: var(--color-secondary);">
+                                    <span class="text-sm" style="color: var(--color-text);">📆 月計畫</span>
+                                    <input type="checkbox" id="left-month-toggle" class="panel-toggle w-4 h-4 rounded" data-panel="left" data-type="month" checked>
                                 </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" id="left-week-toggle" class="panel-toggle" data-panel="left" data-type="week" checked>
-                                    <span class="ml-2 text-sm text-gray-700">週計畫</span>
+                                <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all hover:bg-opacity-80" style="background-color: var(--color-secondary);">
+                                    <span class="text-sm" style="color: var(--color-text);">📋 週計畫</span>
+                                    <input type="checkbox" id="left-week-toggle" class="panel-toggle w-4 h-4 rounded" data-panel="left" data-type="week" checked>
                                 </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" id="left-day-toggle" class="panel-toggle" data-panel="left" data-type="day" checked>
-                                    <span class="ml-2 text-sm text-gray-700">日計畫</span>
+                                <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all hover:bg-opacity-80" style="background-color: var(--color-secondary);">
+                                    <span class="text-sm" style="color: var(--color-text);">📝 日計畫</span>
+                                    <input type="checkbox" id="left-day-toggle" class="panel-toggle w-4 h-4 rounded" data-panel="left" data-type="day" checked>
                                 </label>
                             </div>
                         </div>
                         
                         <!-- Right Panel Settings -->
-                        <div class="mb-4">
-                            <h5 class="text-sm font-medium text-gray-600 mb-2">右側面板 (當期計畫)</h5>
+                        <div>
+                            <h4 class="text-sm font-semibold mb-3 flex items-center" style="color: var(--color-title-text);">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                                </svg>
+                                右側面板（當期計畫）
+                            </h4>
                             <div class="space-y-2">
-                                <label class="flex items-center">
-                                    <input type="checkbox" id="right-year-toggle" class="panel-toggle" data-panel="right" data-type="year" checked>
-                                    <span class="ml-2 text-sm text-gray-700">年計畫</span>
+                                <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all hover:bg-opacity-80" style="background-color: var(--color-secondary);">
+                                    <span class="text-sm" style="color: var(--color-text);">📅 年計畫</span>
+                                    <input type="checkbox" id="right-year-toggle" class="panel-toggle w-4 h-4 rounded" data-panel="right" data-type="year" checked>
                                 </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" id="right-month-toggle" class="panel-toggle" data-panel="right" data-type="month" checked>
-                                    <span class="ml-2 text-sm text-gray-700">月計畫</span>
+                                <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all hover:bg-opacity-80" style="background-color: var(--color-secondary);">
+                                    <span class="text-sm" style="color: var(--color-text);">📆 月計畫</span>
+                                    <input type="checkbox" id="right-month-toggle" class="panel-toggle w-4 h-4 rounded" data-panel="right" data-type="month" checked>
                                 </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" id="right-week-toggle" class="panel-toggle" data-panel="right" data-type="week" checked>
-                                    <span class="ml-2 text-sm text-gray-700">週計畫</span>
+                                <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all hover:bg-opacity-80" style="background-color: var(--color-secondary);">
+                                    <span class="text-sm" style="color: var(--color-text);">📋 週計畫</span>
+                                    <input type="checkbox" id="right-week-toggle" class="panel-toggle w-4 h-4 rounded" data-panel="right" data-type="week" checked>
                                 </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" id="right-day-toggle" class="panel-toggle" data-panel="right" data-type="day" checked>
-                                    <span class="ml-2 text-sm text-gray-700">日計畫</span>
+                                <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all hover:bg-opacity-80" style="background-color: var(--color-secondary);">
+                                    <span class="text-sm" style="color: var(--color-text);">📝 日計畫</span>
+                                    <input type="checkbox" id="right-day-toggle" class="panel-toggle w-4 h-4 rounded" data-panel="right" data-type="day" checked>
                                 </label>
                             </div>
                         </div>
                     </div>
+                    <p class="mt-4 text-xs text-center" style="color: var(--color-text-secondary);">
+                        💡 提示：取消勾選可隱藏對應的面板，讓介面更簡潔
+                    </p>
+                </div>
 
-                    <!-- Auto-Save Settings -->
-                    <div>
-                        <h4 class="text-md font-semibold text-gray-700 mb-4">自動儲存設定</h4>
-
-                        <div class="mb-4">
-                            <label class="flex items-center">
-                                <input type="checkbox" id="autosave-enabled-toggle" class="autosave-toggle" checked>
-                                <span class="ml-2 text-sm text-gray-700">啟用自動儲存</span>
-                            </label>
-                            <p class="text-xs text-gray-500 mt-1 ml-6">編輯內容後自動儲存變更</p>
+                <!-- Tab 3: Data Management -->
+                <div id="settings-tab-data" class="settings-tab-content px-6 py-4 h-full overflow-y-auto custom-scrollbar" style="display: none;">
+                    <div class="space-y-5">
+                        <!-- Auto-Save Settings -->
+                        <div class="p-4 rounded-lg border" style="border-color: var(--color-border); background-color: var(--color-secondary);">
+                            <h4 class="text-sm font-semibold mb-3" style="color: var(--color-title-text);">自動儲存</h4>
+                            <div class="space-y-3">
+                                <label class="flex items-center justify-between p-3 rounded-lg" style="background-color: var(--color-primary);">
+                                    <div>
+                                        <span class="block text-sm font-medium" style="color: var(--color-text);">啟用自動儲存</span>
+                                        <span class="text-xs" style="color: var(--color-text-secondary);">編輯內容後自動儲存變更</span>
+                                    </div>
+                                    <input type="checkbox" id="autosave-enabled-toggle" class="autosave-toggle w-5 h-5 rounded" checked>
+                                </label>
+                                <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: var(--color-primary);">
+                                    <div>
+                                        <span class="block text-sm font-medium" style="color: var(--color-text);">延遲時間</span>
+                                        <span class="text-xs" style="color: var(--color-text-secondary);">變更後等待多久才儲存</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <input type="number" id="autosave-delay-input" class="px-2 py-1 border rounded text-sm w-16 text-center focus:outline-none focus:ring-2 focus:ring-blue-500" style="border-color: var(--color-border); background-color: var(--color-primary); color: var(--color-text);" min="1" max="60" value="3">
+                                        <span class="text-sm" style="color: var(--color-text);">秒</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-4">
-                            <h5 class="text-sm font-medium text-gray-600 mb-2">自動儲存延遲時間</h5>
+                        <!-- Export Section -->
+                        <div class="p-4 rounded-lg border" style="border-color: var(--color-border); background-color: var(--color-secondary);">
+                            <div class="flex items-start space-x-4">
+                                <div class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900">
+                                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="text-sm font-semibold" style="color: var(--color-title-text);">匯出資料</h4>
+                                    <p class="text-xs mt-1 mb-3" style="color: var(--color-text-secondary);">將所有工作計畫資料匯出為 ZIP 壓縮檔，方便備份或轉移</p>
+                                    <button id="export-data-btn" class="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center space-x-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                        <span>匯出資料</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Import Section -->
+                        <div class="p-4 rounded-lg border" style="border-color: var(--color-border); background-color: var(--color-secondary);">
+                            <div class="flex items-start space-x-4">
+                                <div class="p-2 rounded-lg bg-green-100 dark:bg-green-900">
+                                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="text-sm font-semibold" style="color: var(--color-title-text);">匯入資料</h4>
+                                    <p class="text-xs mt-1 mb-3" style="color: var(--color-text-secondary);">從 ZIP 壓縮檔匯入工作計畫資料（將覆蓋現有同名檔案）</p>
+                                    <input type="file" id="import-file-input" accept=".zip" class="hidden">
+                                    <button id="import-data-btn" class="px-4 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors flex items-center space-x-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                        <span>選擇檔案匯入</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Warning Notice -->
+                        <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700">
                             <div class="flex items-center space-x-2">
-                                <input
-                                    type="number"
-                                    id="autosave-delay-input"
-                                    class="px-3 py-1 border border-gray-300 rounded text-sm w-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    min="1"
-                                    max="60"
-                                    value="3"
-                                >
-                                <span class="text-sm text-gray-700">秒</span>
+                                <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                <p class="text-xs text-yellow-700 dark:text-yellow-300">建議在匯入前先匯出備份現有資料，以防資料遺失</p>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">內容變更後等待多久才自動儲存（1-60 秒）</p>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Data Management Settings -->
-                    <div>
-                        <h4 class="text-md font-semibold text-gray-700 mb-4">資料管理</h4>
-
-                        <div class="mb-4">
-                            <h5 class="text-sm font-medium text-gray-600 mb-2">匯出資料</h5>
-                            <p class="text-xs text-gray-500 mb-2">將所有工作計畫資料匯出為 ZIP 壓縮檔</p>
-                            <button id="export-data-btn" class="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-                                匯出資料
-                            </button>
-                        </div>
-
-                        <div class="mb-4">
-                            <h5 class="text-sm font-medium text-gray-600 mb-2">匯入資料</h5>
-                            <p class="text-xs text-gray-500 mb-2">從 ZIP 壓縮檔匯入工作計畫資料（將覆蓋現有資料）</p>
-                            <input type="file" id="import-file-input" accept=".zip" class="hidden">
-                            <button id="import-data-btn" class="px-4 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
-                                選擇檔案匯入
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Google Account Settings (002-google-drive-storage) -->
-                    <div>
-                        <h4 class="text-md font-semibold text-gray-700 mb-4">Google 雲端儲存</h4>
-                        
-                        <div id="google-auth-status" class="mb-4">
-                            <h5 class="text-sm font-medium text-gray-600 mb-2">Google 帳號</h5>
-                            
-                            <!-- Connected status display -->
-                            <div class="flex items-center space-x-2 mb-3" style="display: none;">
-                                <div id="google-auth-indicator" class="w-2 h-2 rounded-full bg-gray-400" title="未連結"></div>
-                                <span class="text-sm text-gray-700">已連結：</span>
-                                <span id="google-connected-email" class="text-sm font-medium text-blue-600"></span>
-                            </div>
-                            
-                            <!-- Connect button -->
-                            <button id="google-connect-btn" class="px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors flex items-center space-x-2">
-                                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                <!-- Tab 4: Cloud Storage (Google Drive) -->
+                <div id="settings-tab-cloud" class="settings-tab-content px-6 py-4 h-full overflow-y-auto custom-scrollbar" style="display: none;">
+                    <div class="space-y-5">
+                        <!-- Google Account Section -->
+                        <div id="google-auth-status" class="p-4 rounded-lg border" style="border-color: var(--color-border); background-color: var(--color-secondary);">
+                            <h4 class="text-sm font-semibold mb-3 flex items-center" style="color: var(--color-title-text);">
+                                <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
                                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                                 </svg>
-                                <span>連結 Google 帳號</span>
-                            </button>
+                                Google 帳號連結
+                            </h4>
                             
-                            <!-- Disconnect button (hidden by default) -->
-                            <button id="google-disconnect-btn" class="px-4 py-2 text-sm bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors" style="display: none;">
-                                解除連結
-                            </button>
+                            <!-- Connected status display -->
+                            <div class="flex items-center space-x-2 mb-3 p-2 rounded" style="display: none; background-color: var(--color-primary);">
+                                <div id="google-auth-indicator" class="w-2 h-2 rounded-full bg-gray-400" title="未連結"></div>
+                                <span class="text-sm" style="color: var(--color-text);">已連結：</span>
+                                <span id="google-connected-email" class="text-sm font-medium text-blue-600"></span>
+                            </div>
                             
-                            <p class="text-xs text-gray-500 mt-2">連結 Google 帳號以使用 Google Drive 雲端儲存功能</p>
-                            
-                            <!-- Google Drive Path Settings (shown only when connected) -->
-                            <div id="google-drive-path-container" class="mt-4 pt-4 border-t border-gray-200" style="display: none;">
-                                <label for="google-drive-path-input" class="block text-sm font-medium text-gray-600 mb-1">
-                                    Google Drive 儲存路徑
+                            <!-- Connect/Disconnect buttons -->
+                            <div class="flex items-center space-x-3">
+                                <button id="google-connect-btn" class="px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors flex items-center space-x-2">
+                                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                    </svg>
+                                    <span>連結 Google 帳號</span>
+                                </button>
+                                <button id="google-disconnect-btn" class="px-4 py-2 text-sm bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors" style="display: none;">
+                                    解除連結
+                                </button>
+                            </div>
+                            <p class="text-xs mt-2" style="color: var(--color-text-secondary);">連結 Google 帳號以使用 Google Drive 雲端儲存功能</p>
+                        </div>
+                        
+                        <!-- Google Drive Settings (shown only when connected) -->
+                        <div id="google-drive-path-container" class="p-4 rounded-lg border" style="border-color: var(--color-border); background-color: var(--color-secondary); display: none;">
+                            <!-- Path Settings -->
+                            <div class="mb-4">
+                                <label for="google-drive-path-input" class="block text-sm font-medium mb-2" style="color: var(--color-title-text);">
+                                    📁 Google Drive 儲存路徑
                                 </label>
                                 <div class="flex space-x-2">
-                                    <input 
-                                        type="text" 
-                                        id="google-drive-path-input" 
-                                        class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                        placeholder="WorkPlanByCalendar"
-                                        value="WorkPlanByCalendar"
-                                    >
-                                    <button 
-                                        id="save-google-drive-path-btn" 
-                                        class="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                                    >
+                                    <input type="text" id="google-drive-path-input" class="flex-1 px-3 py-2 text-sm border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" style="border-color: var(--color-border); background-color: var(--color-primary); color: var(--color-text);" placeholder="WorkPlanByCalendar" value="WorkPlanByCalendar">
+                                    <button id="save-google-drive-path-btn" class="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
                                         儲存
                                     </button>
                                 </div>
                                 <p id="google-drive-path-error" class="mt-1 text-xs text-red-500" style="display: none;"></p>
-                                <p class="text-xs text-gray-500 mt-1">資料將儲存在「我的雲端硬碟 / {路徑}」</p>
-                                
-                                <!-- Storage Mode Switch -->
-                                <div class="mt-4 pt-4 border-t border-gray-200">
-                                    <h5 class="text-sm font-medium text-gray-600 mb-3">儲存模式</h5>
-                                    <div class="space-y-2">
-                                        <label class="flex items-center space-x-3 cursor-pointer">
-                                            <input 
-                                                type="radio" 
-                                                id="storage-mode-local" 
-                                                name="storage-mode" 
-                                                value="local" 
-                                                class="storage-mode-radio w-4 h-4 text-blue-600"
-                                                checked
-                                            >
-                                            <span class="text-sm text-gray-700">
-                                                <span class="font-medium">本地儲存</span>
-                                                <span class="text-gray-500">（資料儲存在本機）</span>
-                                            </span>
-                                        </label>
-                                        <label for="storage-mode-google-drive" class="flex items-center space-x-3 cursor-pointer">
-                                            <input 
-                                                type="radio" 
-                                                id="storage-mode-google-drive" 
-                                                name="storage-mode" 
-                                                value="google_drive" 
-                                                class="storage-mode-radio w-4 h-4 text-blue-600"
-                                            >
-                                            <span class="text-sm text-gray-700">
-                                                <span class="font-medium">Google Drive</span>
-                                                <span class="text-gray-500">（資料同步到雲端）</span>
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <p class="text-xs text-gray-500 mt-2">切換模式後，系統將使用選定的儲存位置讀寫計畫資料</p>
-                                    
-                                    <!-- Test Connection Button -->
-                                    <button 
-                                        id="test-connection-btn" 
-                                        class="mt-3 px-4 py-2 text-sm bg-gray-100 border border-gray-300 text-gray-700 rounded hover:bg-gray-200 transition-colors flex items-center space-x-2"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                        <span>測試 Google Drive 連線</span>
-                                    </button>
+                                <p class="text-xs mt-1" style="color: var(--color-text-secondary);">資料將儲存在「我的雲端硬碟 / {路徑}」</p>
+                            </div>
+                            
+                            <!-- Storage Mode -->
+                            <div class="pt-4 border-t" style="border-color: var(--color-border);">
+                                <h5 class="text-sm font-medium mb-3" style="color: var(--color-title-text);">儲存模式</h5>
+                                <div class="space-y-2">
+                                    <label class="flex items-center p-2 rounded cursor-pointer transition-all" style="background-color: var(--color-primary);">
+                                        <input type="radio" id="storage-mode-local" name="storage-mode" value="local" class="storage-mode-radio w-4 h-4 text-blue-600" checked>
+                                        <div class="ml-3">
+                                            <span class="block text-sm font-medium" style="color: var(--color-text);">💾 本地儲存</span>
+                                            <span class="text-xs" style="color: var(--color-text-secondary);">資料儲存在本機</span>
+                                        </div>
+                                    </label>
+                                    <label for="storage-mode-google-drive" class="flex items-center p-2 rounded cursor-pointer transition-all" style="background-color: var(--color-primary);">
+                                        <input type="radio" id="storage-mode-google-drive" name="storage-mode" value="google_drive" class="storage-mode-radio w-4 h-4 text-blue-600">
+                                        <div class="ml-3">
+                                            <span class="block text-sm font-medium" style="color: var(--color-text);">☁️ Google Drive</span>
+                                            <span class="text-xs" style="color: var(--color-text-secondary);">資料同步到雲端</span>
+                                        </div>
+                                    </label>
                                 </div>
+                                
+                                <!-- Test Connection Button -->
+                                <button id="test-connection-btn" class="mt-3 w-full px-4 py-2 text-sm border rounded transition-colors flex items-center justify-center space-x-2" style="background-color: var(--color-primary); border-color: var(--color-border); color: var(--color-text);">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span>測試 Google Drive 連線</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Info Notice -->
+                        <div class="p-3 rounded-lg bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700">
+                            <div class="flex items-start space-x-2">
+                                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <p class="text-xs text-blue-700 dark:text-blue-300">使用 Google Drive 可在多台裝置間同步您的計畫資料，並自動備份到雲端</p>
                             </div>
                         </div>
                     </div>
@@ -576,15 +650,21 @@
 
             <!-- Modal Footer -->
             <div class="px-6 py-3 border-t rounded-b-lg flex justify-between" style="background-color: var(--color-secondary); border-color: var(--color-border);">
-                <button id="settings-reset-btn" class="px-4 py-2 text-sm transition-colors" style="color: var(--color-text-secondary);" onmouseover="this.style.color='var(--color-text)'" onmouseout="this.style.color='var(--color-text-secondary)'">
-                    重設為預設值
+                <button id="settings-reset-btn" class="px-4 py-2 text-sm transition-colors flex items-center space-x-1" style="color: var(--color-text-secondary);" onmouseover="this.style.color='var(--color-text)'" onmouseout="this.style.color='var(--color-text-secondary)'">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    <span>重設為預設值</span>
                 </button>
                 <div class="flex space-x-2">
-                    <button id="settings-cancel-btn" class="px-4 py-2 text-sm rounded transition-colors" style="background-color: var(--color-secondary); color: var(--color-text);" onmouseover="this.style.backgroundColor='var(--color-border)'" onmouseout="this.style.backgroundColor='var(--color-secondary)'">
+                    <button id="settings-cancel-btn" class="px-4 py-2 text-sm rounded transition-colors" style="background-color: var(--color-secondary); color: var(--color-text); border: 1px solid var(--color-border);">
                         取消
                     </button>
-                    <button id="settings-save-btn" class="px-4 py-2 text-sm text-white rounded transition-colors" style="background-color: var(--color-accent);" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-                        儲存設定
+                    <button id="settings-save-btn" class="px-4 py-2 text-sm text-white rounded transition-colors flex items-center space-x-1" style="background-color: var(--color-accent);" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span>儲存設定</span>
                     </button>
                 </div>
             </div>
