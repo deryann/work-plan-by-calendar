@@ -980,3 +980,108 @@
         transform: scale(1);
     }
 }
+
+/* ========================================
+   Google Auth Styles (002-google-drive-storage)
+   ======================================== */
+
+/* Google connect button */
+#google-connect-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+#google-connect-btn:hover {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+#google-connect-btn:focus {
+    outline: none;
+    ring: 2px solid #3b82f6;
+}
+
+/* Google disconnect button */
+#google-disconnect-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #dc2626;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+#google-disconnect-btn:hover {
+    background-color: #fee2e2;
+    border-color: #f87171;
+}
+
+/* Google auth status indicator */
+#google-auth-indicator {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+#google-auth-indicator.connected {
+    background-color: #22c55e;
+}
+
+#google-auth-indicator.expired {
+    background-color: #eab308;
+}
+
+#google-auth-indicator.not-connected {
+    background-color: #9ca3af;
+}
+
+/* Google auth status section */
+#google-auth-status {
+    padding: 1rem;
+    background-color: var(--color-secondary);
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+}
+
+/* Connected email display */
+#google-connected-email {
+    color: var(--color-accent);
+    font-weight: 500;
+}
+
+/* Dark theme adjustments */
+.theme-dark #google-connect-btn {
+    color: #e5e5e5;
+    background-color: #2d2d2d;
+    border-color: #404040;
+}
+
+.theme-dark #google-connect-btn:hover {
+    background-color: #3d3d3d;
+    border-color: #525252;
+}
+
+.theme-dark #google-disconnect-btn {
+    color: #f87171;
+    background-color: rgba(220, 38, 38, 0.1);
+    border-color: rgba(220, 38, 38, 0.3);
+}
+
+.theme-dark #google-disconnect-btn:hover {
+    background-color: rgba(220, 38, 38, 0.2);
+}

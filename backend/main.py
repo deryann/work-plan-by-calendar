@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status, Request, UploadFile, File
+from fastapi import FastAPI, HTTPException, status, Request, UploadFile, File, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,11 +16,13 @@ sys.path.append(str(project_root))
 from backend.models import (
     Plan, PlanType, PlanCreate, PlanUpdate, AllPlans, 
     CopyRequest, ErrorResponse, Settings, UISettings, SettingsUpdate,
-    ExportResponse, ImportValidation, ImportSuccessResponse
+    ExportResponse, ImportValidation, ImportSuccessResponse,
+    GoogleAuthInfo, GoogleAuthCallbackRequest
 )
 from backend.plan_service import PlanService
 from backend.settings_service import SettingsService
 from backend.data_export_service import create_export_zip, validate_zip_file, execute_import
+from backend.google_auth_service import GoogleAuthService, GoogleAuthError
 
 app = FastAPI(
     title="Work Plan Calendar API",
@@ -57,6 +59,7 @@ if snapshot_dir.exists():
 data_dir = project_root / "data"
 plan_service = PlanService(data_dir=str(data_dir))
 settings_service = SettingsService()
+google_auth_service = GoogleAuthService()
 
 
 @app.exception_handler(IOError)
@@ -543,6 +546,133 @@ async def import_data(file: UploadFile = File(...)):
             detail=ErrorResponse(
                 error="UNKNOWN_ERROR",
                 message=f"匯入過程發生未知錯誤: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+# Google Auth endpoints (002-google-drive-storage)
+@app.get("/api/auth/google/status", response_model=GoogleAuthInfo)
+async def get_google_auth_status():
+    """取得 Google 授權狀態"""
+    try:
+        auth_status = google_auth_service.get_auth_status()
+        return auth_status
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="AUTH_STATUS_ERROR",
+                message=f"取得授權狀態失敗: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.get("/api/auth/google/authorize")
+async def get_google_auth_url(redirect_uri: str = Query(..., description="OAuth 回調 URL")):
+    """取得 Google OAuth 授權 URL"""
+    try:
+        auth_url = google_auth_service.get_auth_url(redirect_uri)
+        return {"auth_url": auth_url}
+    except GoogleAuthError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorResponse(
+                error="AUTH_URL_ERROR",
+                message=str(e),
+                details={}
+            ).dict()
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="AUTH_URL_ERROR",
+                message=f"產生授權 URL 失敗: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.post("/api/auth/google/callback", response_model=GoogleAuthInfo)
+async def google_auth_callback(callback_request: GoogleAuthCallbackRequest):
+    """處理 Google OAuth 回調"""
+    try:
+        auth_info = google_auth_service.handle_callback(
+            code=callback_request.code,
+            redirect_uri=callback_request.redirect_uri
+        )
+        return auth_info
+    except GoogleAuthError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorResponse(
+                error="AUTH_CALLBACK_ERROR",
+                message=str(e),
+                details={}
+            ).dict()
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="AUTH_CALLBACK_ERROR",
+                message=f"處理授權回調失敗: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.post("/api/auth/google/logout")
+async def google_logout():
+    """登出 Google 帳號"""
+    try:
+        success = google_auth_service.logout()
+        if success:
+            return {"message": "已成功登出 Google 帳號"}
+        else:
+            return {"message": "目前未連結 Google 帳號"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="LOGOUT_ERROR",
+                message=f"登出失敗: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.post("/api/auth/google/refresh", response_model=GoogleAuthInfo)
+async def refresh_google_token():
+    """刷新 Google Token"""
+    try:
+        token = google_auth_service.refresh_token()
+        if token:
+            return GoogleAuthInfo(
+                status="connected",
+                user_email=token.user_email,
+                connected_at=token.created_at,
+                expires_at=token.token_expiry
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=ErrorResponse(
+                    error="REFRESH_FAILED",
+                    message="無法刷新 Token，請重新登入",
+                    details={}
+                ).dict()
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="REFRESH_ERROR",
+                message=f"刷新 Token 失敗: {str(e)}",
                 details={}
             ).dict()
         )

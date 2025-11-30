@@ -26,6 +26,93 @@ class ErrorType(str, Enum):
     SIZE = "size"
 
 
+# Google Drive 儲存整合相關模型 (002-google-drive-storage)
+class StorageModeType(str, Enum):
+    """儲存模式類型"""
+    LOCAL = "local"                    # 本地檔案系統
+    GOOGLE_DRIVE = "google_drive"      # Google Drive
+
+
+class GoogleAuthStatus(str, Enum):
+    """Google 授權狀態"""
+    NOT_CONNECTED = "not_connected"    # 未連結
+    CONNECTED = "connected"            # 已連結
+    EXPIRED = "expired"                # 授權過期
+    ERROR = "error"                    # 授權錯誤
+
+
+class StorageMode(BaseModel):
+    """儲存模式設定"""
+    mode: StorageModeType = StorageModeType.LOCAL
+    google_drive_path: Optional[str] = "WorkPlanByCalendar"
+    last_sync_at: Optional[datetime] = None
+    
+    @validator('google_drive_path')
+    def validate_google_drive_path(cls, v):
+        """驗證 Google Drive 路徑"""
+        if v is None:
+            return v
+        if len(v) < 1 or len(v) > 255:
+            raise ValueError('路徑長度必須在 1-255 字元之間')
+        if '..' in v:
+            raise ValueError('路徑不可包含 ".."')
+        if v.startswith('/'):
+            raise ValueError('路徑必須為相對路徑')
+        return v
+
+
+class GoogleAuthInfo(BaseModel):
+    """Google 授權資訊（用於 API 回應，不含敏感資料）"""
+    status: GoogleAuthStatus = GoogleAuthStatus.NOT_CONNECTED
+    user_email: Optional[str] = None
+    connected_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+
+
+class GoogleAuthToken(BaseModel):
+    """Google 授權 Token（僅後端使用，加密儲存）"""
+    access_token: str
+    refresh_token: str
+    token_expiry: datetime
+    user_email: str
+    scopes: List[str]
+    created_at: datetime
+    updated_at: datetime
+
+
+class StorageModeUpdateRequest(BaseModel):
+    """儲存模式更新請求"""
+    mode: StorageModeType
+    google_drive_path: Optional[str] = None
+    
+    @validator('google_drive_path')
+    def validate_google_drive_path(cls, v):
+        """驗證 Google Drive 路徑"""
+        if v is None:
+            return v
+        if len(v) < 1 or len(v) > 255:
+            raise ValueError('路徑長度必須在 1-255 字元之間')
+        if '..' in v:
+            raise ValueError('路徑不可包含 ".."')
+        if v.startswith('/'):
+            raise ValueError('路徑必須為相對路徑')
+        return v
+
+
+class StorageStatusResponse(BaseModel):
+    """儲存狀態回應"""
+    mode: StorageModeType
+    google_drive_path: Optional[str]
+    google_auth: GoogleAuthInfo
+    is_ready: bool  # 當前模式是否可用
+
+
+class GoogleAuthCallbackRequest(BaseModel):
+    """OAuth 回調請求"""
+    code: str  # Authorization Code
+    redirect_uri: str
+
+
 class PlanBase(BaseModel):
     content: str
 

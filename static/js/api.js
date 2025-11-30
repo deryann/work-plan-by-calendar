@@ -298,6 +298,60 @@ class PlanAPI {
         
         return await response.json();
     }
+
+    // ========================================
+    // Google Auth API (002-google-drive-storage)
+    // ========================================
+
+    /**
+     * Get Google auth status
+     * @returns {Promise<object>} Auth status with user info
+     */
+    async getGoogleAuthStatus() {
+        return await this.request('/auth/google/status');
+    }
+
+    /**
+     * Get Google OAuth authorization URL
+     * @param {string} redirectUri - OAuth callback URL
+     * @returns {Promise<object>} Object with auth_url
+     */
+    async getGoogleAuthUrl(redirectUri) {
+        return await this.request(`/auth/google/authorize?redirect_uri=${encodeURIComponent(redirectUri)}`);
+    }
+
+    /**
+     * Handle Google OAuth callback
+     * @param {string} code - Authorization code from Google
+     * @param {string} redirectUri - Same redirect URI used in authorization
+     * @returns {Promise<object>} Auth result with user info
+     */
+    async googleAuthCallback(code, redirectUri) {
+        return await this.request('/auth/google/callback', {
+            method: 'POST',
+            body: JSON.stringify({ code, redirect_uri: redirectUri })
+        });
+    }
+
+    /**
+     * Logout from Google account
+     * @returns {Promise<object>} Logout result
+     */
+    async googleLogout() {
+        return await this.request('/auth/google/logout', {
+            method: 'POST'
+        });
+    }
+
+    /**
+     * Refresh Google auth token
+     * @returns {Promise<object>} Refreshed auth info
+     */
+    async refreshGoogleToken() {
+        return await this.request('/auth/google/refresh', {
+            method: 'POST'
+        });
+    }
 }
 
 // API client singleton
@@ -306,3 +360,12 @@ const planAPI = new PlanAPI();
 // Export for use in other modules
 window.PlanAPI = PlanAPI;
 window.planAPI = planAPI;
+
+// Create api alias for google-auth.js compatibility
+window.api = {
+    getGoogleAuthStatus: () => planAPI.getGoogleAuthStatus(),
+    getGoogleAuthUrl: (redirectUri) => planAPI.getGoogleAuthUrl(redirectUri),
+    googleAuthCallback: (code, redirectUri) => planAPI.googleAuthCallback(code, redirectUri),
+    googleLogout: () => planAPI.googleLogout(),
+    refreshGoogleToken: () => planAPI.refreshGoogleToken()
+};

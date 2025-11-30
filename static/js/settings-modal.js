@@ -6,6 +6,7 @@ class SettingsModal {
         this.modal = document.getElementById('settings-modal');
         this.isVisible = false;
         this.pendingSettings = null;
+        this.googleAuthStatus = null;
         
         this.init();
     }
@@ -21,11 +22,20 @@ class SettingsModal {
 
         this.bindEvents();
         this.loadCurrentSettings();
+        this.loadGoogleAuthStatus();
         
         // Listen for settings updates from the manager
         this.settingsManager.onSettingsUpdated((settings) => {
             this.loadCurrentSettings();
         });
+        
+        // Listen for Google auth status changes
+        if (window.googleAuthManager) {
+            window.googleAuthManager.onStatusChange((status) => {
+                this.googleAuthStatus = status;
+                this.updateGoogleAuthUI();
+            });
+        }
     }
 
     /**
@@ -98,6 +108,21 @@ class SettingsModal {
                 if (e.target.files && e.target.files[0]) {
                     this.handleImport(e.target.files[0]);
                 }
+            });
+        }
+
+        // Google Auth buttons
+        const googleConnectBtn = document.getElementById('google-connect-btn');
+        if (googleConnectBtn) {
+            googleConnectBtn.addEventListener('click', () => {
+                this.handleGoogleConnect();
+            });
+        }
+
+        const googleDisconnectBtn = document.getElementById('google-disconnect-btn');
+        if (googleDisconnectBtn) {
+            googleDisconnectBtn.addEventListener('click', () => {
+                this.handleGoogleDisconnect();
             });
         }
 
@@ -581,6 +606,128 @@ class SettingsModal {
             Utils.hideLoading();
             Utils.showError(`匯入失敗: ${error.message}`);
             console.error('Import error:', error);
+        }
+    }
+
+    // ========================================
+    // Google Auth Methods (002-google-drive-storage)
+    // ========================================
+
+    /**
+     * Load Google auth status
+     */
+    async loadGoogleAuthStatus() {
+        try {
+            if (window.googleAuthManager) {
+                await window.googleAuthManager.init();
+                this.googleAuthStatus = await window.googleAuthManager.getAuthStatus();
+                this.updateGoogleAuthUI();
+            }
+        } catch (error) {
+            console.error('Failed to load Google auth status:', error);
+            this.googleAuthStatus = { status: 'not_connected' };
+            this.updateGoogleAuthUI();
+        }
+    }
+
+    /**
+     * Update Google auth UI based on current status
+     */
+    updateGoogleAuthUI() {
+        const statusContainer = document.getElementById('google-auth-status');
+        const connectBtn = document.getElementById('google-connect-btn');
+        const disconnectBtn = document.getElementById('google-disconnect-btn');
+        const emailDisplay = document.getElementById('google-connected-email');
+
+        if (!statusContainer) return;
+
+        const status = this.googleAuthStatus;
+        const isConnected = status && status.status === 'connected';
+
+        if (connectBtn) {
+            connectBtn.style.display = isConnected ? 'none' : 'inline-block';
+        }
+
+        if (disconnectBtn) {
+            disconnectBtn.style.display = isConnected ? 'inline-block' : 'none';
+        }
+
+        if (emailDisplay) {
+            if (isConnected && status.user_email) {
+                emailDisplay.textContent = status.user_email;
+                emailDisplay.parentElement.style.display = 'flex';
+            } else {
+                emailDisplay.parentElement.style.display = 'none';
+            }
+        }
+
+        // Update status indicator
+        const statusIndicator = document.getElementById('google-auth-indicator');
+        if (statusIndicator) {
+            if (isConnected) {
+                statusIndicator.className = 'w-2 h-2 rounded-full bg-green-500';
+                statusIndicator.title = '已連結';
+            } else if (status && status.status === 'expired') {
+                statusIndicator.className = 'w-2 h-2 rounded-full bg-yellow-500';
+                statusIndicator.title = '授權過期';
+            } else {
+                statusIndicator.className = 'w-2 h-2 rounded-full bg-gray-400';
+                statusIndicator.title = '未連結';
+            }
+        }
+    }
+
+    /**
+     * Handle Google account connection
+     */
+    async handleGoogleConnect() {
+        try {
+            Utils.showLoading('正在連結 Google 帳號...');
+
+            if (!window.googleAuthManager) {
+                throw new Error('Google Auth Manager 未初始化');
+            }
+
+            const result = await window.googleAuthManager.startAuth();
+            
+            this.googleAuthStatus = result;
+            this.updateGoogleAuthUI();
+            
+            Utils.hideLoading();
+            Utils.showSuccess('已成功連結 Google 帳號');
+            
+        } catch (error) {
+            Utils.hideLoading();
+            console.error('Google connect failed:', error);
+            Utils.showError('連結 Google 帳號失敗: ' + error.message);
+        }
+    }
+
+    /**
+     * Handle Google account disconnection
+     */
+    async handleGoogleDisconnect() {
+        if (!confirm('確定要解除 Google 帳號連結嗎？')) {
+            return;
+        }
+
+        try {
+            Utils.showLoading('正在解除連結...');
+
+            if (window.googleAuthManager) {
+                await window.googleAuthManager.logout();
+            }
+
+            this.googleAuthStatus = { status: 'not_connected' };
+            this.updateGoogleAuthUI();
+            
+            Utils.hideLoading();
+            Utils.showSuccess('已解除 Google 帳號連結');
+            
+        } catch (error) {
+            Utils.hideLoading();
+            console.error('Google disconnect failed:', error);
+            Utils.showError('解除連結失敗: ' + error.message);
         }
     }
 }
