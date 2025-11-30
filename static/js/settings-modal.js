@@ -149,6 +149,14 @@ class SettingsModal {
             });
         }
 
+        // Test connection button (T085)
+        const testConnectionBtn = document.getElementById('test-connection-btn');
+        if (testConnectionBtn) {
+            testConnectionBtn.addEventListener('click', () => {
+                this.handleTestConnection();
+            });
+        }
+
         // Storage mode radio buttons (002-google-drive-storage)
         const storageModeRadios = document.querySelectorAll('.storage-mode-radio');
         storageModeRadios.forEach(radio => {
@@ -1041,6 +1049,63 @@ class SettingsModal {
                 }
             }
         }
+    }
+
+    /**
+     * Handle test connection button click (T085)
+     */
+    async handleTestConnection() {
+        try {
+            Utils.showLoading('正在測試連線...');
+            
+            const result = await window.planAPI.testGoogleDriveConnection();
+            
+            Utils.hideLoading();
+            
+            if (result.success) {
+                const details = result.details || {};
+                const message = `✓ ${result.message}\n\n` +
+                    `帳號: ${details.user_email || 'N/A'}\n` +
+                    `資料夾: ${details.base_folder || 'N/A'}\n` +
+                    `檔案數: ${details.file_count || 0}`;
+                Utils.showSuccess(message);
+            } else {
+                this.showGoogleDriveError(result);
+            }
+        } catch (error) {
+            Utils.hideLoading();
+            console.error('Connection test failed:', error);
+            Utils.showError('連線測試失敗: ' + error.message);
+        }
+    }
+
+    /**
+     * Show Google Drive error with friendly message (T086-T087)
+     * @param {object} result - Error result from API
+     */
+    showGoogleDriveError(result) {
+        const errorType = result.details?.error_type;
+        let message = result.message;
+        let suggestion = '';
+        
+        switch (errorType) {
+            case 'not_connected':
+                suggestion = '請先在設定中連結您的 Google 帳號';
+                break;
+            case 'auth_expired':
+                suggestion = '請重新連結 Google 帳號以更新授權';
+                break;
+            case 'network':
+                suggestion = '請檢查您的網路連線後再試';
+                break;
+            case 'quota_exceeded':
+                suggestion = '請稍後再試，或聯繫 Google 了解配額限制';
+                break;
+            default:
+                suggestion = '如果問題持續發生，請嘗試重新連結 Google 帳號';
+        }
+        
+        Utils.showError(`${message}\n\n${suggestion}`);
     }
 }
 

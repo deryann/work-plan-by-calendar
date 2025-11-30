@@ -699,6 +699,46 @@ async def update_storage_mode(request: StorageModeUpdateRequest):
         )
 
 
+@app.post("/api/storage/test-connection")
+async def test_google_drive_connection():
+    """測試 Google Drive 連線 (T081)
+    
+    Returns:
+        連線測試結果，包含：
+        - success: 是否成功
+        - message: 結果訊息
+        - details: 詳細資訊（成功時包含帳號資訊）
+    """
+    try:
+        # 檢查授權狀態
+        auth_status = google_auth_service.get_auth_status()
+        if auth_status.status != GoogleAuthStatus.CONNECTED:
+            return {
+                "success": False,
+                "message": "請先連結 Google 帳號",
+                "details": {"error_type": "not_connected"}
+            }
+        
+        # 建立 GoogleDriveStorageProvider 並測試連線
+        from backend.storage import GoogleDriveStorageProvider
+        
+        storage_mode = settings_service.get_storage_mode()
+        provider = GoogleDriveStorageProvider(
+            base_path=storage_mode.google_drive_path or "WorkPlanByCalendar",
+            auth_service=google_auth_service
+        )
+        
+        result = provider.test_connection()
+        return result
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"連線測試失敗: {str(e)}",
+            "details": {"error_type": "unknown", "error": str(e)}
+        }
+
+
 @app.get("/api/auth/google/status", response_model=GoogleAuthInfo)
 async def get_google_auth_status():
     """取得 Google 授權狀態"""

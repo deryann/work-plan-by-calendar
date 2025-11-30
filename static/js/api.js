@@ -393,6 +393,16 @@ class PlanAPI {
             body: JSON.stringify(body)
         });
     }
+
+    /**
+     * Test Google Drive connection (T084)
+     * @returns {Promise<object>} Connection test result
+     */
+    async testGoogleDriveConnection() {
+        return await this.request('/storage/test-connection', {
+            method: 'POST'
+        });
+    }
 }
 
 // API client singleton
@@ -411,5 +421,6 @@ window.api = {
     refreshGoogleToken: () => planAPI.refreshGoogleToken(),
     getStorageStatus: () => planAPI.getStorageStatus(),
     updateGoogleDrivePath: (path) => planAPI.updateGoogleDrivePath(path),
-    updateStorageMode: (mode, googleDrivePath) => planAPI.updateStorageMode(mode, googleDrivePath)
+    updateStorageMode: (mode, googleDrivePath) => planAPI.updateStorageMode(mode, googleDrivePath),
+    testGoogleDriveConnection: () => planAPI.testGoogleDriveConnection()
 };

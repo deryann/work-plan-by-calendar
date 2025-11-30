@@ -296,18 +296,14 @@ class PlanService:
             self.storage = LocalStorageProvider(str(self.data_dir))
         elif mode == StorageModeType.GOOGLE_DRIVE:
             # 切換到 Google Drive 儲存
-            # 注意：GoogleDriveStorageProvider 將在 Phase 7 實作
-            # 目前暫時使用佔位實作
-            try:
-                from .storage import GoogleDriveStorageProvider
-                self.storage = GoogleDriveStorageProvider(
-                    base_path=google_drive_path or "WorkPlanByCalendar"
-                )
-            except ImportError:
-                # GoogleDriveStorageProvider 尚未實作
-                raise NotImplementedError(
-                    "Google Drive 儲存模式尚未完全實作，將在後續版本支援"
-                )
+            from .storage import GoogleDriveStorageProvider
+            from .google_auth_service import GoogleAuthService
+            
+            auth_service = GoogleAuthService()
+            self.storage = GoogleDriveStorageProvider(
+                base_path=google_drive_path or "WorkPlanByCalendar",
+                auth_service=auth_service
+            )
         else:
             raise ValueError(f"不支援的儲存模式: {mode}")
         

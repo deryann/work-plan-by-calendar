@@ -187,39 +187,39 @@
 
 ### 後端實作
 
-- [ ] T067 [US5] 建立 GoogleDriveStorageProvider 類別於 backend/storage/google_drive.py
-- [ ] T068 [US5] 實作 _get_or_create_folder 輔助方法（建立/取得資料夾 ID）於 backend/storage/google_drive.py
-- [ ] T069 [US5] 實作 _find_file 輔助方法（搜尋檔案）於 backend/storage/google_drive.py
-- [ ] T070 [US5] 實作 _build_folder_path 輔助方法（解析路徑建立資料夾結構）於 backend/storage/google_drive.py
-- [ ] T071 [US5] 實作 read_file 方法於 backend/storage/google_drive.py
-- [ ] T072 [US5] 實作 write_file 方法（支援建立和更新）於 backend/storage/google_drive.py
-- [ ] T073 [US5] 實作 file_exists 方法於 backend/storage/google_drive.py
-- [ ] T074 [US5] 實作 delete_file 方法於 backend/storage/google_drive.py
-- [ ] T075 [US5] 實作 ensure_directory 方法（遞迴建立資料夾）於 backend/storage/google_drive.py
-- [ ] T076 [US5] 實作 get_file_stats 方法於 backend/storage/google_drive.py
-- [ ] T077 [US5] 實作檔案 ID 快取機制於 backend/storage/google_drive.py
-- [ ] T078 [US5] 實作指數退避重試機制於 backend/storage/google_drive.py
-- [ ] T079 [US5] 更新 PlanService 根據儲存模式建立對應的 StorageProvider 於 backend/plan_service.py
-- [ ] T080 [US5] 更新 backend/main.py 支援根據設定初始化正確的 StorageProvider
-- [ ] T081 [US5] 新增 POST /api/storage/test-connection 端點（測試 Google Drive 連線）於 backend/main.py
+- [x] T067 [US5] 建立 GoogleDriveStorageProvider 類別於 backend/storage/google_drive.py
+- [x] T068 [US5] 實作 _get_or_create_folder 輔助方法（建立/取得資料夾 ID）於 backend/storage/google_drive.py
+- [x] T069 [US5] 實作 _find_file 輔助方法（搜尋檔案）於 backend/storage/google_drive.py
+- [x] T070 [US5] 實作 _build_folder_path 輔助方法（解析路徑建立資料夾結構）於 backend/storage/google_drive.py
+- [x] T071 [US5] 實作 read_file 方法於 backend/storage/google_drive.py
+- [x] T072 [US5] 實作 write_file 方法（支援建立和更新）於 backend/storage/google_drive.py
+- [x] T073 [US5] 實作 file_exists 方法於 backend/storage/google_drive.py
+- [x] T074 [US5] 實作 delete_file 方法於 backend/storage/google_drive.py
+- [x] T075 [US5] 實作 ensure_directory 方法（遞迴建立資料夾）於 backend/storage/google_drive.py
+- [x] T076 [US5] 實作 get_file_stats 方法於 backend/storage/google_drive.py
+- [x] T077 [US5] 實作檔案 ID 快取機制於 backend/storage/google_drive.py
+- [x] T078 [US5] 實作指數退避重試機制於 backend/storage/google_drive.py
+- [x] T079 [US5] 更新 PlanService 根據儲存模式建立對應的 StorageProvider 於 backend/plan_service.py
+- [x] T080 [US5] 更新 backend/main.py 支援根據設定初始化正確的 StorageProvider
+- [x] T081 [US5] 新增 POST /api/storage/test-connection 端點（測試 Google Drive 連線）於 backend/main.py
 
 ### 錯誤處理
 
-- [ ] T082 [US5] 實作 Google Drive 專用錯誤類別於 backend/storage/google_drive.py (NetworkError, AuthExpiredError, QuotaExceededError)
-- [ ] T083 [US5] 實作友善錯誤訊息轉換於 backend/storage/google_drive.py
+- [x] T082 [US5] 實作 Google Drive 專用錯誤類別於 backend/storage/google_drive.py (NetworkError, AuthExpiredError, QuotaExceededError)
+- [x] T083 [US5] 實作友善錯誤訊息轉換於 backend/storage/google_drive.py
 
 ### 前端實作
 
-- [ ] T084 [US5] 新增 testGoogleDriveConnection API 方法至 static/js/api.js
-- [ ] T085 [US5] 在設定彈窗新增「測試連線」按鈕於 static/js/settings-modal.js
-- [ ] T086 [US5] 實作 Google Drive 操作錯誤提示 UI 於 static/js/app.js
-- [ ] T087 [US5] 實作網路異常時的友善錯誤訊息顯示於 static/js/app.js
+- [x] T084 [US5] 新增 testGoogleDriveConnection API 方法至 static/js/api.js
+- [x] T085 [US5] 在設定彈窗新增「測試連線」按鈕於 static/js/settings-modal.js
+- [x] T086 [US5] 實作 Google Drive 操作錯誤提示 UI 於 static/js/app.js
+- [x] T087 [US5] 實作網路異常時的友善錯誤訊息顯示於 static/js/app.js
 
 ### 測試
 
-- [ ] T088 [US5] 新增 GoogleDriveStorageProvider 單元測試於 tests/test_google_drive.py (使用 mock)
+- [x] T088 [US5] 新增 GoogleDriveStorageProvider 單元測試於 tests/test_google_drive.py (使用 mock)
 
-**Checkpoint**: User Story 5 完成 - Google Drive 模式下可進行完整的計畫 CRUD 操作
+**Checkpoint**: User Story 5 完成 - Google Drive 模式下可進行完整的計畫 CRUD 操作 ✅
 
 ---
 
