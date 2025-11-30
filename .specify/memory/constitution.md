@@ -1,26 +1,26 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.0.0 → 1.1.0
-Action: Add language standardization principle
+Version Change: 1.1.0 → 1.2.0
+Action: Add Minimal Change Principle for brownfield project
 
 Modified Principles: N/A
 Added Sections:
-  - V. Language Standardization (Traditional Chinese requirement)
+  - VI. Minimal Change Principle (Brownfield Project Discipline)
   
 Removed Sections: N/A
 
 Templates Status:
-  ✅ plan-template.md - Language requirement comment added
-  ✅ spec-template.md - Language requirement comment added
-  ✅ tasks-template.md - Language requirement comment added
-  ✅ checklist-template.md - Language requirement comment added
-  ✅ README.md - Already in Traditional Chinese
+  ✅ plan-template.md - No changes required (Complexity Tracking already covers violation justification)
+  ✅ spec-template.md - No changes required
+  ✅ tasks-template.md - No changes required
+  ✅ checklist-template.md - No changes required
+  ✅ README.md - No changes required
 
 Follow-up TODOs: 
-  - All future specifications MUST be written in Traditional Chinese (zh-TW)
-  - All future plans MUST be written in Traditional Chinese (zh-TW)
-  - User-facing documentation (README sections) MUST remain in Traditional Chinese
+  - All changes MUST evaluate impact on existing functionality before implementation
+  - Refactoring MUST be isolated from feature changes
+  - Large-scale changes MUST be justified in Complexity Tracking section
 -->
 
 # Work Plan Calendar System Constitution
@@ -104,6 +104,46 @@ Follow-up TODOs:
 - Developer-focused content (code, variable names, function names, git commits) MUST use English
 
 **Rationale**: This system is designed for Traditional Chinese-speaking users managing their work plans. Consistency in language ensures all stakeholders (users, product managers, developers) can understand specifications and plans without translation overhead. Mixing languages in specifications creates confusion and reduces accessibility for non-technical stakeholders reviewing requirements.
+
+### VI. Minimal Change Principle (Brownfield Discipline)
+
+**對棕地專案的任何變更 MUST 遵循最小影響範圍原則。**
+
+- 所有變更 MUST 優先考慮對現有程式碼的最小侵入性
+- 新功能 MUST 通過擴展（extension）而非修改（modification）現有程式碼來實現
+- 重構（refactoring）MUST 與功能變更分離，不得在同一個 commit 中混合
+- 修改現有檔案時 MUST 保留原有的程式碼風格和架構模式
+- 刪除現有程式碼 MUST 提供明確的理由和影響評估
+- 跨多個檔案的變更 MUST 在 plan.md 的 Complexity Tracking 中說明必要性
+- API 變更 MUST 保持向後相容性，或提供明確的遷移路徑
+- 資料庫/檔案結構變更 MUST 包含遷移策略和回滾計畫
+
+**變更範圍分級**：
+
+| 變更等級 | 影響範圍 | 審查要求 |
+|---------|---------|---------|
+| **微型** | 單一函數/方法內部調整 | 標準 code review |
+| **小型** | 單一檔案內多處修改 | 標準 code review + 測試驗證 |
+| **中型** | 2-5 個檔案的協調變更 | 詳細說明 + 影響評估 |
+| **大型** | 超過 5 個檔案或跨層變更 | 架構討論 + Complexity Tracking 必填 |
+
+**禁止行為**：
+
+- 禁止「順便」重構與功能無關的程式碼
+- 禁止未經討論的大規模程式碼風格統一
+- 禁止在 bug 修復中夾帶功能增強
+- 禁止移除「看起來沒用」但未經確認的程式碼
+- 禁止變更未被新功能直接使用的 API 簽名
+
+**例外處理**：
+
+若必須進行大範圍變更，MUST 在 plan.md 中記錄：
+1. 為何最小變更方案不可行
+2. 影響範圍的完整清單（受影響的檔案、函數、測試）
+3. 回滾策略
+4. 增量實施計畫（如可能）
+
+**Rationale**: 棕地專案已有運行中的功能和使用者依賴。大範圍變更增加引入回歸 bug 的風險，且難以追蹤問題來源。最小變更原則確保每次修改都是可控的、可追蹤的、可回滾的，保護現有系統的穩定性。
 
 ## Performance Targets
 
@@ -195,4 +235,4 @@ Violations MUST be justified in the implementation plan with:
 - Mitigation plan to minimize impact
 - Future refactoring plan to eliminate violation
 
-**Version**: 1.1.0 | **Ratified**: 2025-10-24 | **Last Amended**: 2025-10-24
+**Version**: 1.2.0 | **Ratified**: 2025-10-24 | **Last Amended**: 2025-11-30

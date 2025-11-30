@@ -1,0 +1,283 @@
+openapi: 3.0.3
+info:
+  title: Storage Settings API
+  description: 儲存模式設定相關 API
+  version: 1.0.0
+
+paths:
+  /api/storage/status:
+    get:
+      summary: 取得儲存狀態
+      description: 查詢當前的儲存模式設定和狀態
+      operationId: getStorageStatus
+      tags:
+        - Storage Settings
+      responses:
+        '200':
+          description: 儲存狀態
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageStatusResponse'
+              examples:
+                local_mode:
+                  summary: 本地模式
+                  value:
+                    mode: "local"
+                    google_drive_path: null
+                    google_auth:
+                      status: "not_connected"
+                      user_email: null
+                      connected_at: null
+                      expires_at: null
+                    is_ready: true
+                google_drive_mode:
+                  summary: Google Drive 模式
+                  value:
+                    mode: "google_drive"
+                    google_drive_path: "WorkPlan/2025"
+                    google_auth:
+                      status: "connected"
+                      user_email: "user@example.com"
+                      connected_at: "2025-11-30T10:00:00Z"
+                      expires_at: "2025-11-30T11:00:00Z"
+                    is_ready: true
+
+  /api/storage/mode:
+    put:
+      summary: 更新儲存模式
+      description: 切換儲存模式（本地/Google Drive）
+      operationId: updateStorageMode
+      tags:
+        - Storage Settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StorageModeUpdateRequest'
+            examples:
+              switch_to_local:
+                summary: 切換至本地模式
+                value:
+                  mode: "local"
+              switch_to_google_drive:
+                summary: 切換至 Google Drive 模式
+                value:
+                  mode: "google_drive"
+                  google_drive_path: "WorkPlan/2025"
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageStatusResponse'
+        '400':
+          description: 請求無效
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_path:
+                  summary: 路徑格式無效
+                  value:
+                    error: "INVALID_PATH"
+                    message: "路徑不可包含 '..'"
+                    details:
+                      path: "../../../etc/passwd"
+                not_authorized:
+                  summary: 未連結 Google 帳號
+                  value:
+                    error: "NOT_AUTHORIZED"
+                    message: "請先連結 Google 帳號"
+                    details: {}
+
+  /api/storage/google-drive-path:
+    put:
+      summary: 更新 Google Drive 路徑
+      description: 設定 Google Drive 資料儲存的根目錄路徑
+      operationId: updateGoogleDrivePath
+      tags:
+        - Storage Settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: string
+                  description: Google Drive 相對路徑
+                  minLength: 1
+                  maxLength: 255
+              required:
+                - path
+            example:
+              path: "WorkPlan/2025"
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageStatusResponse'
+        '400':
+          description: 路徑無效
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/storage/test-connection:
+    post:
+      summary: 測試 Google Drive 連線
+      description: 驗證 Google Drive 連線是否正常，並嘗試建立目錄結構
+      operationId: testGoogleDriveConnection
+      tags:
+        - Storage Settings
+      responses:
+        '200':
+          description: 連線測試結果
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: 連線是否成功
+                  message:
+                    type: string
+                    description: 測試結果訊息
+                  details:
+                    type: object
+                    properties:
+                      folder_id:
+                        type: string
+                        description: 根目錄的 Google Drive ID
+                      folders_created:
+                        type: array
+                        items:
+                          type: string
+                        description: 已建立的子目錄列表
+              examples:
+                success:
+                  summary: 連線成功
+                  value:
+                    success: true
+                    message: "Google Drive 連線成功，目錄結構已建立"
+                    details:
+                      folder_id: "1ABC..."
+                      folders_created:
+                        - "Year"
+                        - "Month"
+                        - "Week"
+                        - "Day"
+                failure:
+                  summary: 連線失敗
+                  value:
+                    success: false
+                    message: "無法連接 Google Drive，請檢查網路連線"
+                    details: {}
+        '401':
+          description: 未授權
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    StorageModeType:
+      type: string
+      enum:
+        - local
+        - google_drive
+      description: |
+        儲存模式類型：
+        - local: 本地檔案系統
+        - google_drive: Google Drive 雲端儲存
+
+    StorageModeUpdateRequest:
+      type: object
+      description: 儲存模式更新請求
+      properties:
+        mode:
+          $ref: '#/components/schemas/StorageModeType'
+        google_drive_path:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 255
+          description: Google Drive 路徑（僅在 mode=google_drive 時使用）
+      required:
+        - mode
+
+    StorageStatusResponse:
+      type: object
+      description: 儲存狀態回應
+      properties:
+        mode:
+          $ref: '#/components/schemas/StorageModeType'
+        google_drive_path:
+          type: string
+          nullable: true
+          description: Google Drive 路徑
+        google_auth:
+          $ref: '#/components/schemas/GoogleAuthInfo'
+        is_ready:
+          type: boolean
+          description: 當前儲存模式是否可用
+      required:
+        - mode
+        - google_auth
+        - is_ready
+
+    GoogleAuthInfo:
+      type: object
+      description: Google 授權資訊
+      properties:
+        status:
+          type: string
+          enum:
+            - not_connected
+            - connected
+            - expired
+            - error
+        user_email:
+          type: string
+          nullable: true
+        connected_at:
+          type: string
+          format: date-time
+          nullable: true
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      description: 錯誤回應
+      properties:
+        error:
+          type: string
+          description: 錯誤代碼
+        message:
+          type: string
+          description: 錯誤訊息
+        details:
+          type: object
+          description: 額外錯誤詳情
+      required:
+        - error
+        - message
+
+tags:
+  - name: Storage Settings
+    description: 儲存模式設定相關端點

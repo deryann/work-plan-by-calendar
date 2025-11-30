@@ -1,0 +1,227 @@
+openapi: 3.0.3
+info:
+  title: Google Auth API
+  description: Google OAuth 2.0 授權相關 API
+  version: 1.0.0
+
+paths:
+  /api/auth/google/status:
+    get:
+      summary: 取得 Google 授權狀態
+      description: 查詢當前的 Google 帳號連結狀態
+      operationId: getGoogleAuthStatus
+      tags:
+        - Google Auth
+      responses:
+        '200':
+          description: 授權狀態
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoogleAuthInfo'
+              examples:
+                not_connected:
+                  summary: 未連結
+                  value:
+                    status: "not_connected"
+                    user_email: null
+                    connected_at: null
+                    expires_at: null
+                connected:
+                  summary: 已連結
+                  value:
+                    status: "connected"
+                    user_email: "user@example.com"
+                    connected_at: "2025-11-30T10:00:00Z"
+                    expires_at: "2025-11-30T11:00:00Z"
+
+  /api/auth/google/authorize:
+    get:
+      summary: 取得 Google OAuth 授權 URL
+      description: 產生 Google OAuth 授權頁面的 URL
+      operationId: getGoogleAuthUrl
+      tags:
+        - Google Auth
+      parameters:
+        - name: redirect_uri
+          in: query
+          required: true
+          schema:
+            type: string
+          description: OAuth 回調 URI
+      responses:
+        '200':
+          description: 授權 URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth_url:
+                    type: string
+                    description: Google OAuth 授權頁面 URL
+                required:
+                  - auth_url
+              example:
+                auth_url: "https://accounts.google.com/o/oauth2/v2/auth?..."
+
+  /api/auth/google/callback:
+    post:
+      summary: 處理 Google OAuth 回調
+      description: 使用 Authorization Code 交換 Access Token
+      operationId: handleGoogleCallback
+      tags:
+        - Google Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleAuthCallbackRequest'
+            example:
+              code: "4/0AY0e-..."
+              redirect_uri: "http://localhost:8000/auth/callback"
+      responses:
+        '200':
+          description: 授權成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoogleAuthInfo'
+              example:
+                status: "connected"
+                user_email: "user@example.com"
+                connected_at: "2025-11-30T10:00:00Z"
+                expires_at: "2025-11-30T11:00:00Z"
+        '400':
+          description: 無效的授權碼
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "INVALID_AUTH_CODE"
+                message: "授權碼無效或已過期"
+                details: {}
+
+  /api/auth/google/logout:
+    post:
+      summary: 登出 Google 帳號
+      description: 清除 Google 授權資訊
+      operationId: logoutGoogle
+      tags:
+        - Google Auth
+      responses:
+        '200':
+          description: 登出成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+              example:
+                success: true
+                message: "已成功登出 Google 帳號"
+
+  /api/auth/google/refresh:
+    post:
+      summary: 刷新 Google Token
+      description: 使用 Refresh Token 取得新的 Access Token
+      operationId: refreshGoogleToken
+      tags:
+        - Google Auth
+      responses:
+        '200':
+          description: 刷新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoogleAuthInfo'
+        '401':
+          description: 刷新失敗，需要重新授權
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "REFRESH_FAILED"
+                message: "Token 刷新失敗，請重新連結 Google 帳號"
+                details: {}
+
+components:
+  schemas:
+    GoogleAuthStatus:
+      type: string
+      enum:
+        - not_connected
+        - connected
+        - expired
+        - error
+      description: |
+        Google 授權狀態：
+        - not_connected: 未連結 Google 帳號
+        - connected: 已連結且有效
+        - expired: 授權已過期
+        - error: 授權發生錯誤
+
+    GoogleAuthInfo:
+      type: object
+      description: Google 授權資訊（不含敏感資料）
+      properties:
+        status:
+          $ref: '#/components/schemas/GoogleAuthStatus'
+        user_email:
+          type: string
+          nullable: true
+          description: 已連結的 Google 帳號 email
+        connected_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: 連結時間
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Token 過期時間
+      required:
+        - status
+
+    GoogleAuthCallbackRequest:
+      type: object
+      description: OAuth 回調請求
+      properties:
+        code:
+          type: string
+          description: Authorization Code
+        redirect_uri:
+          type: string
+          description: 回調 URI（必須與授權請求一致）
+      required:
+        - code
+        - redirect_uri
+
+    ErrorResponse:
+      type: object
+      description: 錯誤回應
+      properties:
+        error:
+          type: string
+          description: 錯誤代碼
+        message:
+          type: string
+          description: 錯誤訊息（使用者友善）
+        details:
+          type: object
+          description: 額外錯誤詳情
+      required:
+        - error
+        - message
+
+tags:
+  - name: Google Auth
+    description: Google OAuth 2.0 授權相關端點

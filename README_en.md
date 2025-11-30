@@ -11,20 +11,24 @@ A personal work plan management system organized by calendar time, supporting fo
 - 📋 **Content Copy**: Copy historical plan content to current period
 - 🎨 **Responsive Design**: Supports desktop and mobile devices
 - ⌨️ **Keyboard Shortcuts**: Rich keyboard shortcut support
-- 🖥️ **Panel Maximize**: Double-click panel title for fullscreen focused editing (New in v0.1.0)
+- 🖥️ **Panel Maximize**: Double-click panel title for fullscreen focused editing
+- ☁️ **Google Drive Sync**: Optionally store data to Google Drive (New in v0.2.0)
+- 📦 **Data Export/Import**: Support ZIP format data backup and restore
 
 ## Technical Architecture
 
 ### Backend
 - **Python FastAPI**: REST API service
 - **Pydantic**: Data validation and models
-- **File System**: Markdown file storage
+- **File System / Google Drive**: Dual storage modes
+- **Google API**: Google Drive integration (optional)
 
 ### Frontend
 - **HTML5 + JavaScript (ES6+)**: Pure frontend implementation
 - **TailwindCSS**: Beautiful UI design
 - **Marked.js**: Markdown parsing
 - **Day.js**: Date handling
+- **Google Identity Services**: Google login integration (optional)
 
 ## Development Environment Setup
 
@@ -68,6 +72,41 @@ python start_server.py
 - **API Documentation**: http://localhost:8000/docs
 - **Health Check**: http://localhost:8000/api/health
 
+## Google Drive Setup (Optional)
+
+To enable Google Drive storage, follow these steps:
+
+### 1. Google Cloud Console Setup
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable **Google Drive API**
+4. Create **OAuth 2.0 Client Credentials** (Web application type)
+5. Set Authorized JavaScript origins: `http://localhost:8000`
+6. Set Authorized redirect URIs: `http://localhost:8000/frontend/`
+
+### 2. Environment Variables Setup
+```bash
+# Copy example environment file
+cp .env.example .env
+
+# Edit .env with your Google OAuth credentials
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+
+# Optional: Custom token encryption key (will auto-generate)
+# GOOGLE_TOKEN_ENCRYPTION_KEY=your-encryption-key
+```
+
+### 3. Link Google Account in the App
+1. Click the settings icon ⚙️ in the top right
+2. In "Storage Settings" section, click "Link Google Account"
+3. Complete the Google authorization flow
+4. Set Google Drive storage path (default: `WorkPlanCalendar`)
+5. Switch storage mode to "Google Drive"
+6. Click "Test Connection" to verify settings
+
+For detailed setup instructions, see [docs/google-cloud-setup.md](docs/google-cloud-setup.md).
+
 ## File Structure
 
 ```
@@ -76,7 +115,13 @@ project/
 │   ├── main.py             # FastAPI application main file
 │   ├── models.py           # Pydantic data models
 │   ├── plan_service.py     # Business logic service
-│   └── date_calculator.py  # Date calculation utilities
+│   ├── settings_service.py # Settings management service
+│   ├── google_auth_service.py # Google OAuth service
+│   ├── date_calculator.py  # Date calculation utilities
+│   └── storage/            # Storage abstraction layer
+│       ├── base.py         # StorageProvider interface
+│       ├── local.py        # Local file storage implementation
+│       └── google_drive.py # Google Drive storage implementation
 ├── frontend/               # Frontend interface
 │   └── index.html         # Main page
 ├── static/                # Static resources
@@ -86,10 +131,15 @@ project/
 │   ├── Year/              # Yearly plans (YYYY.md)
 │   ├── Month/             # Monthly plans (YYYYMM.md)
 │   ├── Week/              # Weekly plans (YYYYMMDD.md, date of week's Sunday)
-│   └── Day/               # Daily plans (YYYYMMDD.md)
+│   ├── Day/               # Daily plans (YYYYMMDD.md)
+│   └── settings/          # Settings files (including encrypted Google auth)
+├── docs/                  # Documentation
+│   └── google-cloud-setup.md  # Google Cloud setup guide
+├── tests/                 # Test files
 ├── generate_test_data.py  # Test data generator
 ├── start_server.py        # Startup script
-└── requirements.txt       # Python dependencies
+├── pyproject.toml         # Project settings and dependencies
+└── .env.example           # Environment variables example
 ```
 
 ## API Endpoints
@@ -109,6 +159,23 @@ project/
 - `POST /api/plans/copy` - Copy plan content
 - `GET /api/plans/{plan_type}/{date}/exists` - Check if plan exists
 - `GET /api/health` - Health check
+
+### Google Account Authorization
+- `GET /api/auth/google/status` - Get Google authorization status
+- `GET /api/auth/google/authorize` - Get OAuth authorization URL
+- `POST /api/auth/google/callback` - Handle OAuth authorization callback
+- `POST /api/auth/google/logout` - Logout Google account
+- `POST /api/auth/google/refresh` - Refresh token
+
+### Storage Mode Settings
+- `GET /api/storage/status` - Get storage status
+- `PUT /api/storage/mode` - Switch storage mode
+- `PUT /api/storage/google-drive-path` - Set Google Drive path
+- `POST /api/storage/test-connection` - Test Google Drive connection
+
+### Data Export/Import
+- `GET /api/export` - Export all data as ZIP
+- `POST /api/import` - Import data from ZIP
 
 ## User Guide
 

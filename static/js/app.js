@@ -83,12 +83,20 @@ class WorkPlanApp {
 
         // Setup main date picker
         this.setupMainDatePicker();
+        
+        // Initialize storage mode indicator (002-google-drive-storage)
+        this.initializeStorageModeIndicator();
 
         // Listen for settings changes
         this.settingsManager.onSettingsUpdated((settings) => {
             console.log('Settings updated:', settings);
             // Reload panels if needed when settings change
             this.onSettingsUpdated(settings);
+        });
+        
+        // Listen for storage mode changes
+        window.addEventListener('storage-mode-changed', (e) => {
+            this.updateStorageModeIndicator(e.detail.mode);
         });
     }
 
@@ -694,6 +702,67 @@ class WorkPlanApp {
      */
     getSettingsModal() {
         return this.settingsModal;
+    }
+
+    // ========================================
+    // Storage Mode Indicator (002-google-drive-storage)
+    // ========================================
+
+    /**
+     * Initialize storage mode indicator
+     */
+    async initializeStorageModeIndicator() {
+        try {
+            const status = await window.planAPI.getStorageStatus();
+            this.updateStorageModeIndicator(status.mode);
+        } catch (error) {
+            console.warn('Failed to load storage mode:', error);
+            this.updateStorageModeIndicator('local');
+        }
+    }
+
+    /**
+     * Update storage mode indicator in header
+     * @param {string} mode - Storage mode ('local' or 'google_drive')
+     */
+    updateStorageModeIndicator(mode) {
+        const indicator = document.getElementById('storage-mode-indicator');
+        if (!indicator) return;
+
+        const icon = indicator.querySelector('.storage-mode-icon');
+        const text = indicator.querySelector('.storage-mode-text');
+
+        if (mode === 'google_drive') {
+            indicator.classList.remove('storage-local');
+            indicator.classList.add('storage-cloud');
+            indicator.title = '雲端儲存模式';
+            
+            if (icon) {
+                icon.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+                    </svg>`;
+            }
+            if (text) {
+                text.textContent = '雲端';
+            }
+        } else {
+            indicator.classList.remove('storage-cloud');
+            indicator.classList.add('storage-local');
+            indicator.title = '本地儲存模式';
+            
+            if (icon) {
+                icon.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                    </svg>`;
+            }
+            if (text) {
+                text.textContent = '本地';
+            }
+        }
     }
 }
 

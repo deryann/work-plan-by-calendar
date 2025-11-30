@@ -1,69 +1,92 @@
 import os
 from datetime import datetime, date
 from pathlib import Path
-from typing import Optional
-from .models import Plan, PlanType, AllPlans, CopyRequest, CopyMode
+from typing import Optional, Union
+from .models import Plan, PlanType, AllPlans, CopyRequest, CopyMode, StorageModeType
 from .date_calculator import DateCalculator
+from .storage import StorageProvider, LocalStorageProvider
 
 
 class PlanService:
-    """Business logic service for plan management."""
+    """Business logic service for plan management.
     
-    def __init__(self, data_dir: Optional[str] = None):
+    使用 StorageProvider 抽象層進行檔案操作，支援不同儲存後端。
+    """
+    
+    def __init__(
+        self, 
+        data_dir: Optional[str] = None,
+        storage_provider: Optional[StorageProvider] = None
+    ):
         """初始化 PlanService
         
         Args:
-            data_dir: 資料目錄路徑。如果為 None,使用專案根目錄的 data
+            data_dir: 資料目錄路徑。如果為 None 且沒有提供 storage_provider，
+                      使用專案根目錄的 data
+            storage_provider: 儲存提供者實例。如果提供，data_dir 參數將被忽略。
+                             這允許使用不同的儲存後端（本地、Google Drive 等）
         """
-        if data_dir is None:
-            # 預設使用專案根目錄的 data
-            backend_dir = Path(__file__).parent
-            self.data_dir = backend_dir.parent / "data"
+        if storage_provider is not None:
+            self.storage = storage_provider
+            # 為了向後相容，保留 data_dir 屬性
+            if hasattr(storage_provider, 'data_dir'):
+                self.data_dir = storage_provider.data_dir
+            else:
+                # 如果儲存提供者沒有 data_dir 屬性，使用預設值
+                backend_dir = Path(__file__).parent
+                self.data_dir = backend_dir.parent / "data"
         else:
-            self.data_dir = Path(data_dir)
+            # 使用 LocalStorageProvider 作為預設
+            self.storage = LocalStorageProvider(data_dir)
+            self.data_dir = self.storage.data_dir
         
         self._ensure_directories_exist()
     
     def _ensure_directories_exist(self):
         """確保所有必要的目錄都存在"""
         for subdir in ["Year", "Month", "Week", "Day"]:
-            (self.data_dir / subdir).mkdir(parents=True, exist_ok=True)
+            self.storage.ensure_directory(subdir)
     
-    def _read_file_content(self, file_path: Path) -> str:
+    def _get_relative_path(self, plan_type: PlanType, canonical_date: date) -> str:
+        """取得相對於資料根目錄的檔案路徑"""
+        # 使用 DateCalculator 計算路徑，但提取相對部分
+        file_path_str = DateCalculator.get_file_path(plan_type, canonical_date, str(self.data_dir))
+        # 轉換為相對路徑
+        relative = Path(file_path_str).relative_to(self.data_dir)
+        return str(relative)
+    
+    def _read_file_content(self, relative_path: str) -> str:
         """讀取檔案內容，如果檔案不存在則返回空字串"""
         try:
-            if file_path.exists():
-                return file_path.read_text(encoding='utf-8')
+            return self.storage.read_file(relative_path)
+        except FileNotFoundError:
             return ""
         except Exception as e:
-            raise IOError(f"Error reading file {file_path}: {str(e)}")
+            raise IOError(f"Error reading file {relative_path}: {str(e)}")
     
-    def _write_file_content(self, file_path: Path, content: str):
+    def _write_file_content(self, relative_path: str, content: str):
         """寫入檔案內容"""
         try:
-            file_path.parent.mkdir(parents=True, exist_ok=True)
-            file_path.write_text(content, encoding='utf-8')
+            self.storage.write_file(relative_path, content)
         except Exception as e:
-            raise IOError(f"Error writing file {file_path}: {str(e)}")
+            raise IOError(f"Error writing file {relative_path}: {str(e)}")
     
-    def _get_file_stats(self, file_path: Path) -> tuple[datetime, datetime]:
+    def _get_file_stats(self, relative_path: str) -> tuple[datetime, datetime]:
         """取得檔案的建立和修改時間"""
-        if file_path.exists():
-            stat = file_path.stat()
-            created_at = datetime.fromtimestamp(stat.st_ctime)
-            updated_at = datetime.fromtimestamp(stat.st_mtime)
+        stats = self.storage.get_file_stats(relative_path)
+        if stats.exists and stats.created_at and stats.modified_at:
+            return stats.created_at, stats.modified_at
         else:
             now = datetime.now()
-            created_at = updated_at = now
-        return created_at, updated_at
+            return now, now
     
     def get_plan(self, plan_type: PlanType, target_date: date) -> Plan:
         """取得指定類型和日期的計畫"""
         canonical_date = DateCalculator.get_canonical_date(plan_type, target_date)
-        file_path_str = DateCalculator.get_file_path(plan_type, canonical_date, str(self.data_dir))
-        file_path = Path(file_path_str)
+        relative_path = self._get_relative_path(plan_type, canonical_date)
+        file_path_str = str(self.data_dir / relative_path)
         
-        content = self._read_file_content(file_path)
+        content = self._read_file_content(relative_path)
         
         # 如果檔案不存在或內容為空，創建預設內容
         if not content.strip():
@@ -71,7 +94,7 @@ class PlanService:
             content = f"{title}\n\n"
             # 不自動寫入，讓用戶主動儲存
         
-        created_at, updated_at = self._get_file_stats(file_path)
+        created_at, updated_at = self._get_file_stats(relative_path)
         
         # 從內容中提取標題（第一行）
         lines = content.strip().split('\n')
@@ -93,17 +116,17 @@ class PlanService:
     def create_plan(self, plan_type: PlanType, target_date: date, content: str) -> Plan:
         """建立新計畫"""
         canonical_date = DateCalculator.get_canonical_date(plan_type, target_date)
-        file_path_str = DateCalculator.get_file_path(plan_type, canonical_date, str(self.data_dir))
-        file_path = Path(file_path_str)
+        relative_path = self._get_relative_path(plan_type, canonical_date)
+        file_path_str = str(self.data_dir / relative_path)
         
         # 如果內容不包含標題，添加預設標題
         if not content.strip().startswith('#'):
             title = DateCalculator.format_title(plan_type, canonical_date)
             content = f"{title}\n\n{content}".strip() + "\n"
         
-        self._write_file_content(file_path, content)
+        self._write_file_content(relative_path, content)
         
-        created_at, updated_at = self._get_file_stats(file_path)
+        created_at, updated_at = self._get_file_stats(relative_path)
         
         # 提取標題
         lines = content.strip().split('\n')
@@ -122,17 +145,17 @@ class PlanService:
     def update_plan(self, plan_type: PlanType, target_date: date, content: str) -> Plan:
         """更新計畫內容"""
         canonical_date = DateCalculator.get_canonical_date(plan_type, target_date)
-        file_path_str = DateCalculator.get_file_path(plan_type, canonical_date, str(self.data_dir))
-        file_path = Path(file_path_str)
+        relative_path = self._get_relative_path(plan_type, canonical_date)
+        file_path_str = str(self.data_dir / relative_path)
         
         # 確保內容有標題
         if not content.strip().startswith('#'):
             title = DateCalculator.format_title(plan_type, canonical_date)
             content = f"{title}\n\n{content}".strip() + "\n"
         
-        self._write_file_content(file_path, content)
+        self._write_file_content(relative_path, content)
         
-        created_at, updated_at = self._get_file_stats(file_path)
+        created_at, updated_at = self._get_file_stats(relative_path)
         
         # 提取標題
         lines = content.strip().split('\n')
@@ -151,16 +174,12 @@ class PlanService:
     def delete_plan(self, plan_type: PlanType, target_date: date) -> bool:
         """刪除計畫檔案"""
         canonical_date = DateCalculator.get_canonical_date(plan_type, target_date)
-        file_path_str = DateCalculator.get_file_path(plan_type, canonical_date, str(self.data_dir))
-        file_path = Path(file_path_str)
+        relative_path = self._get_relative_path(plan_type, canonical_date)
         
         try:
-            if file_path.exists():
-                file_path.unlink()
-                return True
-            return False
+            return self.storage.delete_file(relative_path)
         except Exception as e:
-            raise IOError(f"Error deleting file {file_path}: {str(e)}")
+            raise IOError(f"Error deleting file {relative_path}: {str(e)}")
     
     def get_previous_plan(self, plan_type: PlanType, target_date: date) -> Plan:
         """取得前一期計畫"""
@@ -210,9 +229,14 @@ class PlanService:
     def plan_exists(self, plan_type: PlanType, target_date: date) -> bool:
         """檢查計畫檔案是否存在"""
         canonical_date = DateCalculator.get_canonical_date(plan_type, target_date)
-        file_path_str = DateCalculator.get_file_path(plan_type, canonical_date, str(self.data_dir))
-        file_path = Path(file_path_str)
-        return file_path.exists() and file_path.stat().st_size > 0
+        relative_path = self._get_relative_path(plan_type, canonical_date)
+        
+        if not self.storage.file_exists(relative_path):
+            return False
+        
+        # 檢查檔案是否有內容
+        stats = self.storage.get_file_stats(relative_path)
+        return stats.exists and stats.size > 0
 
     def get_plans_existence(self, start_date: date, end_date: date) -> dict:
         """取得日期範圍內的計畫存在狀態
@@ -255,3 +279,33 @@ class PlanService:
             current_date = current_date + timedelta(days=1)
 
         return result
+    
+    def switch_storage_provider(self, mode: StorageModeType, google_drive_path: Optional[str] = None) -> None:
+        """動態切換儲存提供者
+        
+        Args:
+            mode: 儲存模式類型
+            google_drive_path: Google Drive 路徑（僅 google_drive 模式使用）
+            
+        Note:
+            此方法用於在執行期間切換儲存後端。
+            切換到 Google Drive 模式時，需要確保已正確授權。
+        """
+        if mode == StorageModeType.LOCAL:
+            # 切換回本地儲存
+            self.storage = LocalStorageProvider(str(self.data_dir))
+        elif mode == StorageModeType.GOOGLE_DRIVE:
+            # 切換到 Google Drive 儲存
+            from .storage import GoogleDriveStorageProvider
+            from .google_auth_service import GoogleAuthService
+            
+            auth_service = GoogleAuthService()
+            self.storage = GoogleDriveStorageProvider(
+                base_path=google_drive_path or "WorkPlanByCalendar",
+                auth_service=auth_service
+            )
+        else:
+            raise ValueError(f"不支援的儲存模式: {mode}")
+        
+        # 確保目錄結構存在
+        self._ensure_directories_exist()
