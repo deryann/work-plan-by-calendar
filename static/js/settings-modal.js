@@ -774,6 +774,14 @@ class SettingsModal {
             this.googleAuthStatus = result;
             this.updateGoogleAuthUI();
             
+            // Reload storage status to get latest settings
+            await this.loadStorageStatus();
+            
+            // Reload all plans to reflect data from current storage mode
+            if (window.app && typeof window.app.refreshAllPlans === 'function') {
+                await window.app.refreshAllPlans();
+            }
+            
             Utils.hideLoading();
             Utils.showSuccess('已成功連結 Google 帳號');
             
@@ -819,6 +827,11 @@ class SettingsModal {
 
             this.googleAuthStatus = { status: 'not_connected' };
             this.updateGoogleAuthUI();
+            
+            // Reload all plans to reflect data from local storage
+            if (window.app && typeof window.app.refreshAllPlans === 'function') {
+                await window.app.refreshAllPlans();
+            }
             
             Utils.hideLoading();
             Utils.showSuccess('已解除 Google 帳號連結');
@@ -1065,6 +1078,11 @@ class SettingsModal {
             this.storageStatus = result;
             this.updateStorageModeUI();
             this.updateStorageUI();
+            
+            // Reload all plans to reflect data from new storage mode
+            if (window.app && typeof window.app.refreshAllPlans === 'function') {
+                await window.app.refreshAllPlans();
+            }
             
             Utils.hideLoading();
             
