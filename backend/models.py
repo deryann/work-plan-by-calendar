@@ -107,6 +107,20 @@ class StorageStatusResponse(BaseModel):
     is_ready: bool  # 當前模式是否可用
 
 
+class GoogleDrivePathUpdateRequest(BaseModel):
+    """Google Drive 路徑更新請求"""
+    path: str = Field(..., min_length=1, max_length=255)
+    
+    @validator('path')
+    def validate_path(cls, v):
+        """驗證路徑格式"""
+        if '..' in v:
+            raise ValueError('路徑不可包含 ".."')
+        if v.startswith('/'):
+            raise ValueError('路徑必須為相對路徑')
+        return v
+
+
 class GoogleAuthCallbackRequest(BaseModel):
     """OAuth 回調請求"""
     code: str  # Authorization Code
@@ -206,10 +220,12 @@ class UISettings(BaseModel):
 
 class Settings(BaseModel):
     ui: UISettings = UISettings()
+    storage: StorageMode = StorageMode()
 
 
 class SettingsUpdate(BaseModel):
     ui: Optional[UISettings] = None
+    storage: Optional[StorageMode] = None
 
 
 # 資料匯出/匯入模型

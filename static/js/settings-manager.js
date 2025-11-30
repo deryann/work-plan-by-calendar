@@ -74,6 +74,10 @@ class SettingsManager {
                     enabled: true,
                     delay: 3 // Auto-save delay in seconds
                 }
+            },
+            storage: {
+                mode: 'local', // 'local' or 'google_drive'
+                google_drive_path: 'WorkPlanByCalendar'
             }
         };
     }
@@ -603,6 +607,56 @@ class SettingsManager {
             }
         } catch (error) {
             console.warn('Failed to re-render Mermaid diagrams:', error);
+        }
+    }
+
+    // ========================================
+    // Storage Mode Methods (002-google-drive-storage)
+    // ========================================
+
+    /**
+     * Get current storage mode
+     * @returns {string} Storage mode ('local' or 'google_drive')
+     */
+    getStorageMode() {
+        return this.currentSettings?.storage?.mode || 'local';
+    }
+
+    /**
+     * Get Google Drive path setting
+     * @returns {string} Google Drive path
+     */
+    getGoogleDrivePath() {
+        return this.currentSettings?.storage?.google_drive_path || 'WorkPlanByCalendar';
+    }
+
+    /**
+     * Get storage settings
+     * @returns {object} Storage settings object
+     */
+    getStorageSettings() {
+        return this.currentSettings?.storage || this.getDefaultSettings().storage;
+    }
+
+    /**
+     * Check if using Google Drive mode
+     * @returns {boolean} True if using Google Drive
+     */
+    isGoogleDriveMode() {
+        return this.getStorageMode() === 'google_drive';
+    }
+
+    /**
+     * Check if storage is ready for use
+     * @returns {Promise<boolean>} True if current storage mode is operational
+     */
+    async isStorageReady() {
+        try {
+            const status = await window.planAPI.getStorageStatus();
+            return status?.is_ready || false;
+        } catch (error) {
+            console.warn('Failed to check storage status:', error);
+            return false;
         }
     }
 }

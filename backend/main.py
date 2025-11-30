@@ -17,7 +17,8 @@ from backend.models import (
     Plan, PlanType, PlanCreate, PlanUpdate, AllPlans, 
     CopyRequest, ErrorResponse, Settings, UISettings, SettingsUpdate,
     ExportResponse, ImportValidation, ImportSuccessResponse,
-    GoogleAuthInfo, GoogleAuthCallbackRequest
+    GoogleAuthInfo, GoogleAuthCallbackRequest, StorageStatusResponse,
+    GoogleDrivePathUpdateRequest, StorageMode, StorageModeType
 )
 from backend.plan_service import PlanService
 from backend.settings_service import SettingsService
@@ -552,6 +553,79 @@ async def import_data(file: UploadFile = File(...)):
 
 
 # Google Auth endpoints (002-google-drive-storage)
+
+# Storage endpoints (002-google-drive-storage)
+@app.get("/api/storage/status", response_model=StorageStatusResponse)
+async def get_storage_status():
+    """取得儲存狀態
+    
+    回傳：
+    - 當前儲存模式
+    - Google Drive 路徑設定
+    - Google 授權狀態
+    - 儲存是否可用
+    """
+    try:
+        storage_mode = settings_service.get_storage_mode()
+        auth_status = google_auth_service.get_auth_status()
+        
+        # 判斷當前模式是否可用
+        is_ready = True
+        if storage_mode.mode == StorageModeType.GOOGLE_DRIVE:
+            # Google Drive 模式需要已授權才可用
+            from backend.models import GoogleAuthStatus
+            is_ready = auth_status.status == GoogleAuthStatus.CONNECTED
+        
+        return StorageStatusResponse(
+            mode=storage_mode.mode,
+            google_drive_path=storage_mode.google_drive_path,
+            google_auth=auth_status,
+            is_ready=is_ready
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="STORAGE_STATUS_ERROR",
+                message=f"取得儲存狀態失敗: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
+@app.put("/api/storage/google-drive-path", response_model=Settings)
+async def update_google_drive_path(request: GoogleDrivePathUpdateRequest):
+    """更新 Google Drive 儲存路徑
+    
+    Args:
+        request: 包含新路徑的請求物件
+        
+    Returns:
+        更新後的完整設定
+    """
+    try:
+        updated_settings = settings_service.update_google_drive_path(request.path)
+        return updated_settings
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorResponse(
+                error="INVALID_PATH",
+                message=str(e),
+                details={"path": request.path}
+            ).dict()
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorResponse(
+                error="PATH_UPDATE_ERROR",
+                message=f"更新路徑失敗: {str(e)}",
+                details={}
+            ).dict()
+        )
+
+
 @app.get("/api/auth/google/status", response_model=GoogleAuthInfo)
 async def get_google_auth_status():
     """取得 Google 授權狀態"""

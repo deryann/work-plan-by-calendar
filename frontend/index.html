@@ -483,6 +483,30 @@
                             </button>
                             
                             <p class="text-xs text-gray-500 mt-2">連結 Google 帳號以使用 Google Drive 雲端儲存功能</p>
+                            
+                            <!-- Google Drive Path Settings (shown only when connected) -->
+                            <div id="google-drive-path-container" class="mt-4 pt-4 border-t border-gray-200" style="display: none;">
+                                <label for="google-drive-path-input" class="block text-sm font-medium text-gray-600 mb-1">
+                                    Google Drive 儲存路徑
+                                </label>
+                                <div class="flex space-x-2">
+                                    <input 
+                                        type="text" 
+                                        id="google-drive-path-input" 
+                                        class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        placeholder="WorkPlanByCalendar"
+                                        value="WorkPlanByCalendar"
+                                    >
+                                    <button 
+                                        id="save-google-drive-path-btn" 
+                                        class="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                                    >
+                                        儲存
+                                    </button>
+                                </div>
+                                <p id="google-drive-path-error" class="mt-1 text-xs text-red-500" style="display: none;"></p>
+                                <p class="text-xs text-gray-500 mt-1">資料將儲存在「我的雲端硬碟 / {路徑}」</p>
+                            </div>
                         </div>
                     </div>
                 </div>

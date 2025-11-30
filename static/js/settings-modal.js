@@ -7,6 +7,7 @@ class SettingsModal {
         this.isVisible = false;
         this.pendingSettings = null;
         this.googleAuthStatus = null;
+        this.storageStatus = null;
         
         this.init();
     }
@@ -23,6 +24,7 @@ class SettingsModal {
         this.bindEvents();
         this.loadCurrentSettings();
         this.loadGoogleAuthStatus();
+        this.loadStorageStatus();
         
         // Listen for settings updates from the manager
         this.settingsManager.onSettingsUpdated((settings) => {
@@ -123,6 +125,27 @@ class SettingsModal {
         if (googleDisconnectBtn) {
             googleDisconnectBtn.addEventListener('click', () => {
                 this.handleGoogleDisconnect();
+            });
+        }
+
+        // Google Drive path input (002-google-drive-storage)
+        const googleDrivePathInput = document.getElementById('google-drive-path-input');
+        if (googleDrivePathInput) {
+            googleDrivePathInput.addEventListener('input', (e) => {
+                this.validateGoogleDrivePath(e.target.value);
+            });
+            googleDrivePathInput.addEventListener('blur', (e) => {
+                this.handleGoogleDrivePathChange(e.target.value);
+            });
+        }
+
+        const saveGoogleDrivePathBtn = document.getElementById('save-google-drive-path-btn');
+        if (saveGoogleDrivePathBtn) {
+            saveGoogleDrivePathBtn.addEventListener('click', () => {
+                const input = document.getElementById('google-drive-path-input');
+                if (input) {
+                    this.saveGoogleDrivePath(input.value);
+                }
             });
         }
 
@@ -675,18 +698,9 @@ class SettingsModal {
                 statusIndicator.title = '未連結';
             }
         }
-    }
 
-    /**
-     * Handle Google account connection
-     */
-    async handleGoogleConnect() {
-        try {
-            Utils.showLoading('正在連結 Google 帳號...');
-
-            if (!window.googleAuthManager) {
-                throw new Error('Google Auth Manager 未初始化');
-            }
+        // Update storage UI when auth status changes
+        this.updateStorageUI();
 
             const result = await window.googleAuthManager.startAuth();
             
@@ -728,6 +742,163 @@ class SettingsModal {
             Utils.hideLoading();
             console.error('Google disconnect failed:', error);
             Utils.showError('解除連結失敗: ' + error.message);
+        }
+    }
+
+    // ========================================
+    // Storage Settings Methods (002-google-drive-storage)
+    // ========================================
+
+    /**
+     * Load storage status
+     */
+    async loadStorageStatus() {
+        try {
+            this.storageStatus = await window.planAPI.getStorageStatus();
+            this.updateStorageUI();
+        } catch (error) {
+            console.error('Failed to load storage status:', error);
+            this.storageStatus = null;
+        }
+    }
+
+    /**
+     * Update storage UI based on current status
+     */
+    updateStorageUI() {
+        const pathInput = document.getElementById('google-drive-path-input');
+        const pathError = document.getElementById('google-drive-path-error');
+        const saveBtn = document.getElementById('save-google-drive-path-btn');
+        const pathContainer = document.getElementById('google-drive-path-container');
+
+        if (pathInput && this.storageStatus) {
+            pathInput.value = this.storageStatus.google_drive_path || 'WorkPlanByCalendar';
+        }
+
+        // Show/hide path container based on Google auth status
+        if (pathContainer) {
+            const isConnected = this.googleAuthStatus?.status === 'connected';
+            pathContainer.style.display = isConnected ? 'block' : 'none';
+        }
+
+        // Clear error on load
+        if (pathError) {
+            pathError.textContent = '';
+            pathError.style.display = 'none';
+        }
+    }
+
+    /**
+     * Validate Google Drive path input
+     * @param {string} path - Path to validate
+     * @returns {object} Validation result { isValid, message }
+     */
+    validateGoogleDrivePath(path) {
+        const pathError = document.getElementById('google-drive-path-error');
+        const pathInput = document.getElementById('google-drive-path-input');
+        const saveBtn = document.getElementById('save-google-drive-path-btn');
+
+        let isValid = true;
+        let message = '';
+
+        // Validation rules
+        if (!path || path.trim().length === 0) {
+            isValid = false;
+            message = '路徑不可為空';
+        } else if (path.length > 255) {
+            isValid = false;
+            message = '路徑長度不可超過 255 字元';
+        } else if (path.includes('..')) {
+            isValid = false;
+            message = '路徑不可包含 ".."';
+        } else if (path.startsWith('/')) {
+            isValid = false;
+            message = '路徑必須為相對路徑（不可以 "/" 開頭）';
+        } else if (/[<>:"|?*]/.test(path)) {
+            isValid = false;
+            message = '路徑包含無效字元（不可包含 <>:"|?*）';
+        }
+
+        // Update UI
+        if (pathError) {
+            if (isValid) {
+                pathError.style.display = 'none';
+                pathError.textContent = '';
+            } else {
+                pathError.style.display = 'block';
+                pathError.textContent = message;
+            }
+        }
+
+        if (pathInput) {
+            if (isValid) {
+                pathInput.classList.remove('border-red-500');
+                pathInput.classList.add('border-gray-300', 'dark:border-gray-600');
+            } else {
+                pathInput.classList.remove('border-gray-300', 'dark:border-gray-600');
+                pathInput.classList.add('border-red-500');
+            }
+        }
+
+        if (saveBtn) {
+            saveBtn.disabled = !isValid;
+        }
+
+        return { isValid, message };
+    }
+
+    /**
+     * Handle Google Drive path change (on blur)
+     * @param {string} path - New path value
+     */
+    handleGoogleDrivePathChange(path) {
+        const trimmedPath = path.trim();
+        const pathInput = document.getElementById('google-drive-path-input');
+        
+        if (pathInput) {
+            pathInput.value = trimmedPath;
+        }
+        
+        this.validateGoogleDrivePath(trimmedPath);
+    }
+
+    /**
+     * Save Google Drive path
+     * @param {string} path - Path to save
+     */
+    async saveGoogleDrivePath(path) {
+        const trimmedPath = path.trim();
+        
+        // Validate before saving
+        const validation = this.validateGoogleDrivePath(trimmedPath);
+        if (!validation.isValid) {
+            Utils.showError(validation.message);
+            return;
+        }
+
+        // Check if path actually changed
+        if (this.storageStatus?.google_drive_path === trimmedPath) {
+            Utils.showSuccess('路徑未變更');
+            return;
+        }
+
+        try {
+            Utils.showLoading('正在儲存路徑設定...');
+            
+            const result = await window.planAPI.updateGoogleDrivePath(trimmedPath);
+            
+            // Update local state
+            if (this.storageStatus) {
+                this.storageStatus.google_drive_path = trimmedPath;
+            }
+            
+            Utils.hideLoading();
+            Utils.showSuccess('Google Drive 路徑已更新');
+            
+        } catch (error) {
+            Utils.hideLoading();
+            console.error('Failed to save Google Drive path:', error);
+            Utils.showError('儲存失敗: ' + error.message);
         }
     }
 }

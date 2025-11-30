@@ -138,20 +138,20 @@
 
 ### 後端實作
 
-- [ ] T050 [US3] 更新 Settings 模型新增 storage 欄位於 backend/models.py
-- [ ] T051 [US3] 更新 SettingsService 支援 StorageMode 讀寫於 backend/settings_service.py
-- [ ] T052 [US3] 新增路徑驗證邏輯（不可包含 ..，不可以 / 開頭，長度 1-255）於 backend/settings_service.py
-- [ ] T053 [US3] 新增 GET /api/storage/status 端點於 backend/main.py
-- [ ] T054 [US3] 新增 PUT /api/storage/google-drive-path 端點於 backend/main.py
+- [x] T050 [US3] 更新 Settings 模型新增 storage 欄位於 backend/models.py
+- [x] T051 [US3] 更新 SettingsService 支援 StorageMode 讀寫於 backend/settings_service.py
+- [x] T052 [US3] 新增路徑驗證邏輯（不可包含 ..，不可以 / 開頭，長度 1-255）於 backend/settings_service.py
+- [x] T053 [US3] 新增 GET /api/storage/status 端點於 backend/main.py
+- [x] T054 [US3] 新增 PUT /api/storage/google-drive-path 端點於 backend/main.py
 
 ### 前端實作
 
-- [ ] T055 [US3] 新增 Storage Settings API 方法至 static/js/api.js (getStorageStatus, updateGoogleDrivePath)
-- [ ] T056 [US3] 在設定彈窗新增 Google Drive 路徑輸入框於 static/js/settings-modal.js
-- [ ] T057 [US3] 實作路徑輸入驗證和錯誤顯示於 static/js/settings-modal.js
-- [ ] T058 [US3] 更新 SettingsManager 支援儲存模式設定於 static/js/settings-manager.js
+- [x] T055 [US3] 新增 Storage Settings API 方法至 static/js/api.js (getStorageStatus, updateGoogleDrivePath)
+- [x] T056 [US3] 在設定彈窗新增 Google Drive 路徑輸入框於 static/js/settings-modal.js
+- [x] T057 [US3] 實作路徑輸入驗證和錯誤顯示於 static/js/settings-modal.js
+- [x] T058 [US3] 更新 SettingsManager 支援儲存模式設定於 static/js/settings-manager.js
 
-**Checkpoint**: User Story 3 完成 - 使用者可設定並儲存 Google Drive 路徑
+**Checkpoint**: User Story 3 完成 - 使用者可設定並儲存 Google Drive 路徑 ✅
 
 ---
 

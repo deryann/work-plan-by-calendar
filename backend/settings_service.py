@@ -2,7 +2,10 @@ import json
 import os
 from pathlib import Path
 from typing import Optional
-from backend.models import Settings, UISettings, PanelSettings, SettingsUpdate
+from backend.models import (
+    Settings, UISettings, PanelSettings, SettingsUpdate,
+    StorageMode, StorageModeType
+)
 
 
 class SettingsService:
@@ -36,6 +39,10 @@ class SettingsService:
                     "left": PanelSettings(year=True, month=True, week=True, day=True),
                     "right": PanelSettings(year=True, month=True, week=True, day=True)
                 }
+            ),
+            storage=StorageMode(
+                mode=StorageModeType.LOCAL,
+                google_drive_path="WorkPlanByCalendar"
             )
         )
         
@@ -71,6 +78,10 @@ class SettingsService:
         # Update UI settings if provided
         if settings_update.ui is not None:
             current_settings.ui = settings_update.ui
+        
+        # Update storage settings if provided
+        if settings_update.storage is not None:
+            current_settings.storage = settings_update.storage
             
         self.save_settings(current_settings)
         return current_settings
@@ -90,5 +101,58 @@ class SettingsService:
         """Update UI settings specifically"""
         current_settings = self.load_settings()
         current_settings.ui = ui_settings
+        self.save_settings(current_settings)
+        return current_settings
+    
+    # ===== Storage Mode Methods =====
+    
+    def get_storage_mode(self) -> StorageMode:
+        """取得儲存模式設定"""
+        settings = self.load_settings()
+        return settings.storage
+    
+    def update_storage_mode(self, storage_mode: StorageMode) -> Settings:
+        """更新儲存模式設定
+        
+        Args:
+            storage_mode: 新的儲存模式設定
+            
+        Returns:
+            更新後的完整設定
+        """
+        current_settings = self.load_settings()
+        current_settings.storage = storage_mode
+        self.save_settings(current_settings)
+        return current_settings
+    
+    def update_google_drive_path(self, path: str) -> Settings:
+        """更新 Google Drive 儲存路徑
+        
+        Args:
+            path: 新的 Google Drive 路徑
+            
+        Returns:
+            更新後的完整設定
+            
+        Raises:
+            ValueError: 路徑格式不正確
+        """
+        # 路徑驗證由 StorageMode validator 處理
+        current_settings = self.load_settings()
+        current_settings.storage.google_drive_path = path
+        self.save_settings(current_settings)
+        return current_settings
+    
+    def set_storage_mode_type(self, mode: StorageModeType) -> Settings:
+        """設定儲存模式類型
+        
+        Args:
+            mode: 儲存模式類型 (LOCAL 或 GOOGLE_DRIVE)
+            
+        Returns:
+            更新後的完整設定
+        """
+        current_settings = self.load_settings()
+        current_settings.storage.mode = mode
         self.save_settings(current_settings)
         return current_settings

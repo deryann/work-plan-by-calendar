@@ -352,6 +352,30 @@ class PlanAPI {
             method: 'POST'
         });
     }
+
+    // ========================================
+    // Storage API (002-google-drive-storage)
+    // ========================================
+
+    /**
+     * Get storage status
+     * @returns {Promise<object>} Storage status with mode, path, auth info
+     */
+    async getStorageStatus() {
+        return await this.request('/storage/status');
+    }
+
+    /**
+     * Update Google Drive storage path
+     * @param {string} path - New Google Drive path
+     * @returns {Promise<object>} Updated settings
+     */
+    async updateGoogleDrivePath(path) {
+        return await this.request('/storage/google-drive-path', {
+            method: 'PUT',
+            body: JSON.stringify({ path })
+        });
+    }
 }
 
 // API client singleton
@@ -367,5 +391,7 @@ window.api = {
     getGoogleAuthUrl: (redirectUri) => planAPI.getGoogleAuthUrl(redirectUri),
     googleAuthCallback: (code, redirectUri) => planAPI.googleAuthCallback(code, redirectUri),
     googleLogout: () => planAPI.googleLogout(),
-    refreshGoogleToken: () => planAPI.refreshGoogleToken()
+    refreshGoogleToken: () => planAPI.refreshGoogleToken(),
+    getStorageStatus: () => planAPI.getStorageStatus(),
+    updateGoogleDrivePath: (path) => planAPI.updateGoogleDrivePath(path)
 };
