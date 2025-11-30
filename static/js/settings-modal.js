@@ -44,6 +44,14 @@ class SettingsModal {
      * Bind event listeners
      */
     bindEvents() {
+        // Tab navigation
+        const tabs = document.querySelectorAll('.settings-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                this.switchTab(e.target.closest('.settings-tab').dataset.tab);
+            });
+        });
+
         // Settings button
         const settingsBtn = document.getElementById('settings-btn');
         if (settingsBtn) {
@@ -235,11 +243,46 @@ class SettingsModal {
         this.modal.setAttribute('aria-hidden', 'false');
         this.isVisible = true;
         
-        // Focus on the first checkbox for accessibility
-        const firstToggle = this.modal.querySelector('.panel-toggle');
+        // Reset to first tab when opening modal
+        this.switchTab('appearance');
+        
+        // Focus on the first toggle for accessibility
+        const firstToggle = this.modal.querySelector('.settings-tab-content.active .panel-toggle, .settings-tab-content.active input[type="radio"]');
         if (firstToggle) {
             firstToggle.focus();
         }
+    }
+
+    /**
+     * Switch between settings tabs
+     */
+    switchTab(tabName) {
+        // Update tab buttons
+        const tabs = document.querySelectorAll('.settings-tab');
+        tabs.forEach(tab => {
+            if (tab.dataset.tab === tabName) {
+                tab.classList.add('active');
+                tab.style.borderBottom = '2px solid var(--color-accent)';
+                tab.style.color = 'var(--color-accent)';
+            } else {
+                tab.classList.remove('active');
+                tab.style.borderBottom = '2px solid transparent';
+                tab.style.color = 'var(--color-text-secondary)';
+            }
+        });
+
+        // Update tab content
+        const contents = document.querySelectorAll('.settings-tab-content');
+        contents.forEach(content => {
+            const contentTabName = content.id.replace('settings-tab-', '');
+            if (contentTabName === tabName) {
+                content.style.display = 'block';
+                content.classList.add('active');
+            } else {
+                content.style.display = 'none';
+                content.classList.remove('active');
+            }
+        });
     }
 
     /**
@@ -751,6 +794,24 @@ class SettingsModal {
 
         try {
             Utils.showLoading('正在解除連結...');
+
+            // If currently in Google Drive mode, switch to local first
+            const wasGoogleDriveMode = this.storageStatus?.mode === 'google_drive';
+            if (wasGoogleDriveMode) {
+                try {
+                    const result = await window.planAPI.updateStorageMode('local', this.storageStatus?.google_drive_path);
+                    this.storageStatus = result;
+                    this.updateStorageModeUI();
+                    this.updateStorageUI();
+                    
+                    // Dispatch event to update header icon
+                    window.dispatchEvent(new CustomEvent('storage-mode-changed', {
+                        detail: { mode: 'local', status: result }
+                    }));
+                } catch (switchError) {
+                    console.warn('Failed to switch storage mode, continuing with logout:', switchError);
+                }
+            }
 
             if (window.googleAuthManager) {
                 await window.googleAuthManager.logout();
