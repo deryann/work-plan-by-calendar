@@ -4,6 +4,7 @@ Google Drive Storage Provider
 實作 StorageProvider 抽象介面，使用 Google Drive API 進行檔案操作。
 """
 
+import builtins
 import io
 import time
 import logging
@@ -50,8 +51,11 @@ class QuotaExceededError(GoogleDriveError):
         super().__init__(message)
 
 
-class FileNotFoundError(GoogleDriveError):
-    """檔案不存在錯誤"""
+class FileNotFoundError(GoogleDriveError, builtins.FileNotFoundError):
+    """檔案不存在錯誤
+    
+    繼承自 builtins.FileNotFoundError 以確保與 Python 標準異常捕獲相容。
+    """
     def __init__(self, path: str):
         super().__init__(f"找不到檔案: {path}")
         self.path = path
