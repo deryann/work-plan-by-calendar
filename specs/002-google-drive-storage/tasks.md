@@ -227,13 +227,15 @@
 
 **Purpose**: 品質提升、文件更新、邊界情況處理
 
-- [ ] T089 [P] 更新 README.md 新增 Google Drive 功能說明
-- [ ] T090 [P] 新增 Google Cloud Console 設定說明文件於 docs/google-cloud-setup.md
-- [ ] T091 程式碼審查和重構（確保符合 Constitution 原則）
-- [ ] T092 驗證所有錯誤訊息使用繁體中文
-- [ ] T093 執行 quickstart.md 驗證流程
-- [ ] T094 效能測試（確認 <3s 讀取, <5s 寫入）
-- [ ] T095 執行完整端對端測試（本地模式 → Google 授權 → 路徑設定 → 模式切換 → Google Drive 操作）
+- [x] T089 [P] 更新 README.md 新增 Google Drive 功能說明
+- [x] T090 [P] 新增 Google Cloud Console 設定說明文件於 docs/google-cloud-setup.md
+- [x] T091 程式碼審查和重構（確保符合 Constitution 原則）
+- [x] T092 驗證所有錯誤訊息使用繁體中文
+- [x] T093 執行 quickstart.md 驗證流程
+- [x] T094 效能測試（確認 <3s 讀取, <5s 寫入）
+- [x] T095 執行完整端對端測試（本地模式 → Google 授權 → 路徑設定 → 模式切換 → Google Drive 操作）
+
+**Checkpoint**: Phase 8 完成 - 文件更新、程式碼品質確認、功能驗證完成 ✅
 
 ---
 

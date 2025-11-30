@@ -11,20 +11,24 @@
 - 📋 **內容複製**: 歷史計畫內容可複製到當期
 - 🎨 **響應式設計**: 支援桌面和移動裝置
 - ⌨️ **快捷鍵**: 豐富的鍵盤快捷鍵支援
-- 🖥️ **面板最大化**: 雙擊面板標題可全螢幕專注編輯（v0.1.0 新增）
+- 🖥️ **面板最大化**: 雙擊面板標題可全螢幕專注編輯
+- ☁️ **Google Drive 同步**: 可選擇將資料儲存至 Google Drive（v0.2.0 新增）
+- 📦 **資料匯出/匯入**: 支援 ZIP 格式的資料備份與還原
 
 ## 技術架構
 
 ### 後端 (Backend)
 - **Python FastAPI**: REST API 服務
 - **Pydantic**: 資料驗證與模型
-- **檔案系統**: Markdown 檔案儲存
+- **檔案系統 / Google Drive**: 雙重儲存模式
+- **Google API**: Google Drive 整合 (可選)
 
 ### 前端 (Frontend)  
 - **HTML5 + JavaScript (ES6+)**: 純前端實作
 - **TailwindCSS**: 美觀的 UI 設計
 - **Marked.js**: Markdown 解析
 - **Day.js**: 日期處理
+- **Google Identity Services**: Google 登入整合 (可選)
 
 ## 開發環境設置
 
@@ -68,6 +72,41 @@ python start_server.py
 - **API 文檔**: http://localhost:8000/docs
 - **健康檢查**: http://localhost:8000/api/health
 
+## Google Drive 設定 (選擇性)
+
+若要啟用 Google Drive 儲存功能，需要進行以下設定：
+
+### 1. Google Cloud Console 設定
+1. 前往 [Google Cloud Console](https://console.cloud.google.com/)
+2. 建立新專案或選擇現有專案
+3. 啟用 **Google Drive API**
+4. 建立 **OAuth 2.0 用戶端憑證** (網頁應用程式類型)
+5. 設定已授權的 JavaScript 來源：`http://localhost:8000`
+6. 設定已授權的重新導向 URI：`http://localhost:8000/frontend/`
+
+### 2. 環境變數設定
+```bash
+# 複製環境變數範例檔
+cp .env.example .env
+
+# 編輯 .env 填入您的 Google OAuth 憑證
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+
+# 選擇性：自訂 Token 加密金鑰（將自動生成）
+# GOOGLE_TOKEN_ENCRYPTION_KEY=your-encryption-key
+```
+
+### 3. 在應用中連結 Google 帳號
+1. 點擊右上角設定圖示 ⚙️
+2. 在「儲存設定」區塊點擊「連結 Google 帳號」
+3. 完成 Google 授權流程
+4. 設定 Google Drive 儲存路徑（預設為 `WorkPlanCalendar`）
+5. 將儲存模式切換為「Google Drive」
+6. 點擊「測試連線」確認設定正確
+
+詳細設定說明請參考 [docs/google-cloud-setup.md](docs/google-cloud-setup.md)。
+
 ## 檔案結構
 
 ```
@@ -76,7 +115,13 @@ project/
 │   ├── main.py             # FastAPI 應用主檔
 │   ├── models.py           # Pydantic 資料模型
 │   ├── plan_service.py     # 業務邏輯服務
-│   └── date_calculator.py  # 日期計算工具
+│   ├── settings_service.py # 設定管理服務
+│   ├── google_auth_service.py # Google OAuth 服務
+│   ├── date_calculator.py  # 日期計算工具
+│   └── storage/            # 儲存抽象層
+│       ├── base.py         # StorageProvider 介面
+│       ├── local.py        # 本地檔案儲存實作
+│       └── google_drive.py # Google Drive 儲存實作
 ├── frontend/               # 前端介面
 │   └── index.html         # 主頁面
 ├── static/                # 靜態資源
@@ -86,10 +131,15 @@ project/
 │   ├── Year/              # 年度計畫 (YYYY.md)
 │   ├── Month/             # 月度計畫 (YYYYMM.md)
 │   ├── Week/              # 週計畫 (YYYYMMDD.md, 周日日期)
-│   └── Day/               # 日計畫 (YYYYMMDD.md)
+│   ├── Day/               # 日計畫 (YYYYMMDD.md)
+│   └── settings/          # 設定檔 (含加密的 Google 授權)
+├── docs/                  # 文件
+│   └── google-cloud-setup.md  # Google Cloud 設定指南
+├── tests/                 # 測試檔案
 ├── generate_test_data.py  # 測試資料產生器
 ├── start_server.py        # 啟動腳本
-└── requirements.txt       # Python 依賴
+├── pyproject.toml         # 專案設定與依賴
+└── .env.example           # 環境變數範例
 ```
 
 ## API 端點
@@ -109,6 +159,23 @@ project/
 - `POST /api/plans/copy` - 複製計畫內容
 - `GET /api/plans/{plan_type}/{date}/exists` - 檢查計畫存在
 - `GET /api/health` - 健康檢查
+
+### Google 帳號授權
+- `GET /api/auth/google/status` - 取得 Google 授權狀態
+- `GET /api/auth/google/authorize` - 取得 OAuth 授權 URL
+- `POST /api/auth/google/callback` - 處理 OAuth 授權回調
+- `POST /api/auth/google/logout` - 登出 Google 帳號
+- `POST /api/auth/google/refresh` - 刷新 Token
+
+### 儲存模式設定
+- `GET /api/storage/status` - 取得儲存狀態
+- `PUT /api/storage/mode` - 切換儲存模式
+- `PUT /api/storage/google-drive-path` - 設定 Google Drive 路徑
+- `POST /api/storage/test-connection` - 測試 Google Drive 連線
+
+### 資料匯出/匯入
+- `GET /api/export` - 匯出所有資料為 ZIP
+- `POST /api/import` - 從 ZIP 匯入資料
 
 ## 使用說明
 
