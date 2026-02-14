@@ -75,6 +75,10 @@ class SettingsManager {
                     delay: 3 // Auto-save delay in seconds
                 }
             },
+            layout: {
+                mode: 'focused', // 'focused' or 'classic'
+                cardOrder: ['day', 'week', 'month', 'year']
+            },
             storage: {
                 mode: 'local', // 'local' or 'google_drive'
                 google_drive_path: 'WorkPlanByCalendar'
@@ -505,6 +509,15 @@ class SettingsManager {
             }
         }
 
+        if (settings && settings.layout) {
+            if (settings.layout.mode) {
+                merged.layout.mode = settings.layout.mode;
+            }
+            if (settings.layout.cardOrder) {
+                merged.layout.cardOrder = [...settings.layout.cardOrder];
+            }
+        }
+
         return merged;
     }
     
@@ -608,6 +621,56 @@ class SettingsManager {
         } catch (error) {
             console.warn('Failed to re-render Mermaid diagrams:', error);
         }
+    }
+
+    // ========================================
+    // Layout Settings Methods
+    // ========================================
+
+    /**
+     * Get layout mode setting
+     * @returns {string} 'focused' or 'classic'
+     */
+    getLayoutMode() {
+        return this.currentSettings?.layout?.mode
+            || Utils.loadFromStorage('layout-mode', 'focused');
+    }
+
+    /**
+     * Set layout mode
+     * @param {string} mode - 'focused' or 'classic'
+     */
+    setLayoutMode(mode) {
+        const settings = this.getSettings();
+        if (!settings.layout) {
+            settings.layout = this.getDefaultSettings().layout;
+        }
+        settings.layout.mode = mode;
+        Utils.saveToStorage('layout-mode', mode);
+        return settings;
+    }
+
+    /**
+     * Get card order
+     * @returns {string[]} Array of plan types in display order
+     */
+    getCardOrder() {
+        return this.currentSettings?.layout?.cardOrder
+            || Utils.loadFromStorage('card-order', ['day', 'week', 'month', 'year']);
+    }
+
+    /**
+     * Set card order
+     * @param {string[]} order - Array of plan types
+     */
+    setCardOrder(order) {
+        const settings = this.getSettings();
+        if (!settings.layout) {
+            settings.layout = this.getDefaultSettings().layout;
+        }
+        settings.layout.cardOrder = order;
+        Utils.saveToStorage('card-order', order);
+        return settings;
     }
 
     // ========================================

@@ -173,6 +173,17 @@ class SettingsModal {
             });
         });
 
+        // Layout mode radio buttons
+        const layoutModeRadios = document.querySelectorAll('.layout-mode-radio');
+        layoutModeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.onLayoutModeChange(e.target.value);
+            });
+        });
+
+        // Initialize card order drag-and-drop
+        this.initCardOrderDrag();
+
         // Panel toggle checkboxes
         const toggles = document.querySelectorAll('.panel-toggle');
         toggles.forEach(toggle => {
@@ -317,16 +328,38 @@ class SettingsModal {
 
         try {
             Utils.showLoading();
-            
+
+            // Check if layout mode or card order changed
+            const layoutChanged = this.pendingSettings.layout &&
+                this.pendingSettings.layout.mode !== this.settingsManager.getLayoutMode();
+            const cardOrderChanged = this.pendingSettings.layout &&
+                JSON.stringify(this.pendingSettings.layout.cardOrder) !==
+                JSON.stringify(this.settingsManager.getCardOrder());
+
+            // Apply layout settings immediately to localStorage
+            if (this.pendingSettings.layout) {
+                if (this.pendingSettings.layout.mode) {
+                    this.settingsManager.setLayoutMode(this.pendingSettings.layout.mode);
+                }
+                if (this.pendingSettings.layout.cardOrder) {
+                    this.settingsManager.setCardOrder(this.pendingSettings.layout.cardOrder);
+                }
+            }
+
             await this.settingsManager.saveSettings(this.pendingSettings);
-            
+
             // Apply the new settings to the UI immediately
             this.settingsManager.applyPanelVisibility();
             this.settingsManager.applyTheme();
-            
+
             Utils.showSuccess('設定已儲存');
             this.hide();
-            
+
+            // Reload if layout changed
+            if (layoutChanged || cardOrderChanged) {
+                setTimeout(() => window.location.reload(), 500);
+            }
+
         } catch (error) {
             console.error('Failed to save settings:', error);
             Utils.showError(`儲存設定失敗: ${error.message}`);
@@ -380,6 +413,18 @@ class SettingsModal {
             lightRadio.checked = themeMode === 'light';
             darkRadio.checked = themeMode === 'dark';
         }
+
+        // Update layout mode radio buttons
+        const layoutMode = this.settingsManager.getLayoutMode();
+        const focusedRadio = document.getElementById('layout-mode-focused');
+        const classicRadio = document.getElementById('layout-mode-classic');
+        if (focusedRadio && classicRadio) {
+            focusedRadio.checked = layoutMode === 'focused';
+            classicRadio.checked = layoutMode === 'classic';
+        }
+
+        // Update card order list
+        this.renderCardOrderList();
 
         // Update checkboxes based on current settings
         const planTypes = ['year', 'month', 'week', 'day'];
@@ -526,6 +571,120 @@ class SettingsModal {
         this.pendingSettings.ui.autoSave.delay = delay;
 
         console.log(`Auto-save delay changed to: ${delay} seconds`);
+    }
+
+    // ========================================
+    // Layout Settings Methods
+    // ========================================
+
+    /**
+     * Handle layout mode change
+     */
+    onLayoutModeChange(mode) {
+        if (!this.pendingSettings) {
+            this.pendingSettings = JSON.parse(JSON.stringify(this.settingsManager.getSettings()));
+        }
+        if (!this.pendingSettings.layout) {
+            this.pendingSettings.layout = this.settingsManager.getDefaultSettings().layout;
+        }
+        this.pendingSettings.layout.mode = mode;
+    }
+
+    /**
+     * Render card order list
+     */
+    renderCardOrderList() {
+        const list = document.getElementById('card-order-list');
+        if (!list) return;
+
+        const order = this.settingsManager.getCardOrder();
+        const labels = { day: '日計畫', week: '週計畫', month: '月計畫', year: '年計畫' };
+
+        list.innerHTML = order.map((type, idx) => `
+            <div class="card-order-item" draggable="true" data-type="${type}" data-index="${idx}">
+                <span class="drag-handle">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                    </svg>
+                </span>
+                <span class="text-sm font-medium" style="color: var(--color-text);">${labels[type] || type}</span>
+                <span class="ml-auto text-xs" style="color: var(--color-text-secondary);">${idx + 1}</span>
+            </div>
+        `).join('');
+
+        this.bindCardOrderDragEvents();
+    }
+
+    /**
+     * Initialize card order drag-and-drop
+     */
+    initCardOrderDrag() {
+        // Initial render is done in loadCurrentSettings
+    }
+
+    /**
+     * Bind drag events to card order items
+     */
+    bindCardOrderDragEvents() {
+        const list = document.getElementById('card-order-list');
+        if (!list) return;
+
+        let draggedItem = null;
+
+        list.querySelectorAll('.card-order-item').forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                draggedItem = item;
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            item.addEventListener('dragend', () => {
+                if (draggedItem) draggedItem.classList.remove('dragging');
+                draggedItem = null;
+                // Update order from DOM
+                this.updateCardOrderFromDOM();
+            });
+
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (draggedItem && draggedItem !== item) {
+                    const rect = item.getBoundingClientRect();
+                    const midY = rect.top + rect.height / 2;
+                    if (e.clientY < midY) {
+                        list.insertBefore(draggedItem, item);
+                    } else {
+                        list.insertBefore(draggedItem, item.nextSibling);
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * Update card order from current DOM order
+     */
+    updateCardOrderFromDOM() {
+        const list = document.getElementById('card-order-list');
+        if (!list) return;
+
+        const newOrder = Array.from(list.querySelectorAll('.card-order-item'))
+            .map(item => item.dataset.type);
+
+        // Update index labels
+        list.querySelectorAll('.card-order-item').forEach((item, idx) => {
+            const indexLabel = item.querySelector('.ml-auto');
+            if (indexLabel) indexLabel.textContent = idx + 1;
+        });
+
+        // Store in pending settings
+        if (!this.pendingSettings) {
+            this.pendingSettings = JSON.parse(JSON.stringify(this.settingsManager.getSettings()));
+        }
+        if (!this.pendingSettings.layout) {
+            this.pendingSettings.layout = this.settingsManager.getDefaultSettings().layout;
+        }
+        this.pendingSettings.layout.cardOrder = newOrder;
     }
 
     /**
