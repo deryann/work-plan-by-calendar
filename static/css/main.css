@@ -935,7 +935,7 @@
 .plan-card.panel-maximized .card-edit-mode,
 .plan-card.panel-maximized .card-preview-mode {
     flex: 1;
-    display: flex !important;
+    display: flex;
     flex-direction: column;
     overflow: hidden;
     min-height: 0;
