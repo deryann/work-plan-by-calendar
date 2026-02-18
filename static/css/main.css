@@ -1323,6 +1323,13 @@
 
 #drawer-backdrop {
     transition: opacity 0.3s ease;
+    /* 必須高於 panel-maximized 的 z-index (9999)，確保在專注模式下可顯示 */
+    z-index: 10000 !important;
+}
+
+#history-drawer {
+    /* 必須高於 panel-maximized 的 z-index (9999)，確保在專注模式下可顯示 */
+    z-index: 10001 !important;
 }
 
 /* ========================================
