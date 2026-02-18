@@ -909,6 +909,52 @@
     display: none !important;
 }
 
+/* PlanCard (focused layout) 專注模式：讓 editor 填滿全螢幕高度 */
+.plan-card.panel-maximized {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.plan-card.panel-maximized .card-header {
+    flex-shrink: 0;
+}
+
+.plan-card.panel-maximized .card-content-wrapper {
+    flex: 1;
+    display: flex !important;
+    flex-direction: column;
+    overflow: hidden;
+    max-height: none !important;
+}
+
+.plan-card.panel-maximized .card-toolbar {
+    flex-shrink: 0;
+}
+
+.plan-card.panel-maximized .card-edit-mode,
+.plan-card.panel-maximized .card-preview-mode {
+    flex: 1;
+    display: flex !important;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.plan-card.panel-maximized .card-editor {
+    flex: 1;
+    min-height: 0 !important;
+    resize: none !important;
+    height: 100% !important;
+}
+
+.plan-card.panel-maximized .card-markdown-preview {
+    flex: 1;
+    min-height: 0 !important;
+    overflow-y: auto;
+    height: 100% !important;
+}
+
 .panel-title {
     cursor: pointer;
     user-select: none;
