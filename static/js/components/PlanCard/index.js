@@ -251,16 +251,25 @@ class PlanCard {
                     c.classList.add('panel-hidden-by-maximize');
                 }
             });
-            // Update focus button
+            // Update focus button text and icon (compress/inward arrows)
             const focusBtn = this.cardElement.querySelector('.card-focus-btn span');
             if (focusBtn) focusBtn.textContent = '退出';
+            const focusIconPath = this.cardElement.querySelector('.card-focus-btn path');
+            if (focusIconPath) {
+                focusIconPath.setAttribute('d', 'M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25');
+            }
         } else {
             this.cardElement.classList.remove('panel-maximized');
             document.querySelectorAll('.plan-card').forEach(c => {
                 c.classList.remove('panel-hidden-by-maximize');
             });
+            // Restore focus button text and icon (expand/outward arrows)
             const focusBtn = this.cardElement.querySelector('.card-focus-btn span');
             if (focusBtn) focusBtn.textContent = '專注';
+            const focusIconPath = this.cardElement.querySelector('.card-focus-btn path');
+            if (focusIconPath) {
+                focusIconPath.setAttribute('d', 'M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4');
+            }
         }
     }
 
