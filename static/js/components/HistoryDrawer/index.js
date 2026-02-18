@@ -11,11 +11,99 @@ class HistoryDrawer {
         // DOM
         this.backdrop = document.getElementById('drawer-backdrop');
         this.drawer = document.getElementById('history-drawer');
+        this.resizeHandle = document.getElementById('drawer-resize-handle');
         this.contentArea = document.getElementById('drawer-content');
         this.titleEl = document.getElementById('drawer-title');
         this.periodLabel = document.getElementById('drawer-period-label');
 
+        this.isResizing = false;
+        this.minWidth = 280;
+        this.maxWidth = Math.min(window.innerWidth * 0.85, 900);
+
         this.bindEvents();
+        this.bindResizeEvents();
+    }
+
+    /**
+     * Bind resize events for the drawer width handle
+     */
+    bindResizeEvents() {
+        if (!this.resizeHandle || !this.drawer) return;
+
+        let startX;
+        let startWidth;
+
+        const handleMouseDown = (e) => {
+            this.isResizing = true;
+            startX = e.clientX;
+            startWidth = parseInt(this.drawer.style.width, 10) || this.drawer.getBoundingClientRect().width;
+
+            this.resizeHandle.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+
+            e.preventDefault();
+        };
+
+        const handleMouseMove = (e) => {
+            if (!this.isResizing) return;
+
+            // Dragging left increases width (drawer is on the right)
+            const deltaX = startX - e.clientX;
+            const newWidth = Math.min(Math.max(startWidth + deltaX, this.minWidth), this.maxWidth);
+            this.drawer.style.width = `${newWidth}px`;
+        };
+
+        const handleMouseUp = () => {
+            if (!this.isResizing) return;
+            this.isResizing = false;
+
+            this.resizeHandle.classList.remove('dragging');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+
+            // Save the preferred width
+            const currentWidth = parseInt(this.drawer.style.width, 10);
+            if (currentWidth) {
+                Utils.saveToStorage('drawer-width', currentWidth);
+            }
+
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        this.resizeHandle.addEventListener('mousedown', handleMouseDown);
+
+        // Touch support
+        this.resizeHandle.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            handleMouseDown({ clientX: touch.clientX, preventDefault: e.preventDefault.bind(e) });
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (this.isResizing) {
+                const touch = e.touches[0];
+                handleMouseMove({ clientX: touch.clientX });
+            }
+        });
+
+        document.addEventListener('touchend', () => {
+            if (this.isResizing) handleMouseUp();
+        });
+
+        // Restore saved width
+        const savedWidth = Utils.loadFromStorage('drawer-width');
+        if (savedWidth) {
+            this.drawer.style.width = `${savedWidth}px`;
+        }
+
+        // Update maxWidth on window resize
+        window.addEventListener('resize', () => {
+            this.maxWidth = Math.min(window.innerWidth * 0.85, 900);
+        });
     }
 
     /**

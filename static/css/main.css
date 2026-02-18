@@ -1330,6 +1330,25 @@
 #history-drawer {
     /* 必須高於 panel-maximized 的 z-index (9999)，確保在專注模式下可顯示 */
     z-index: 10001 !important;
+    /* relative positioning for the resize handle */
+    position: fixed;
+}
+
+.drawer-resize-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    cursor: col-resize;
+    background-color: var(--color-border);
+    transition: background-color 150ms;
+    z-index: 1;
+}
+
+.drawer-resize-handle:hover,
+.drawer-resize-handle.dragging {
+    background-color: var(--color-text-secondary);
 }
 
 /* ========================================
