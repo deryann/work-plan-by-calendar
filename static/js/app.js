@@ -78,6 +78,14 @@ class WorkPlanApp {
         // Initialize settings modal
         this.settingsModal = new SettingsModal(this.settingsManager);
 
+        // Initialize sync panel (Issue #19)
+        this.syncPanel = new SyncPanel();
+        window.syncPanel = this.syncPanel;
+
+        // Initialize sync diff modal (diff view for DIFFERENT files)
+        this.syncDiffModal = new SyncDiffModal();
+        window.syncDiffModal = this.syncDiffModal;
+
         // Initialize calendar modal
         this.calendarModal = new CalendarModal(this);
 

@@ -30,7 +30,8 @@ from backend.routers import (
     settings_router,
     storage_router,
     auth_router,
-    data_router
+    data_router,
+    sync_router,
 )
 
 # ============================================================================
@@ -109,6 +110,7 @@ app.include_router(settings_router)
 app.include_router(storage_router)
 app.include_router(auth_router)
 app.include_router(data_router)
+app.include_router(sync_router)
 
 # ============================================================================
 # Root Endpoints

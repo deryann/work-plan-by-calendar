@@ -269,3 +269,96 @@ class ImportSuccessResponse(BaseModel):
     file_count: int = Field(ge=0)
     overwritten_count: int = Field(ge=0)
     imported_at: str
+
+
+# ============================================================
+# 本地與 Google Drive 同步功能模型 (sync-files)
+# ============================================================
+
+class FileSyncStatus(str, Enum):
+    """檔案同步狀態"""
+    LOCAL_ONLY = "local_only"    # 僅存在本地 data/ 目錄
+    CLOUD_ONLY = "cloud_only"    # 僅存在 Google Drive
+    SAME = "same"                # 兩邊 MD5 hash 完全相同
+    DIFFERENT = "different"      # 兩邊都有，但 MD5 不同
+
+
+class SyncAction(str, Enum):
+    """同步操作方向"""
+    UPLOAD = "upload"            # 將本地檔案上傳至 Google Drive（覆蓋）
+    DOWNLOAD = "download"        # 將 Google Drive 檔案下載至本地（覆蓋）
+    SKIP = "skip"                # 不執行同步
+
+
+class FileDiffStats(BaseModel):
+    """
+    檔案行數差異統計
+    僅在 FileSyncStatus.DIFFERENT 時填充
+    以「本地為基準」計算差異方向
+    """
+    local_lines: int             # 本地檔案的行數
+    cloud_lines: int             # Google Drive 檔案的行數
+    added_lines: int             # 雲端比本地多的行數（max(0, cloud - local)）
+    removed_lines: int           # 本地比雲端多的行數（max(0, local - cloud)）
+
+
+class FileSyncInfo(BaseModel):
+    """單一檔案的同步狀態資訊"""
+    relative_path: str                        # 相對路徑，如 "Year/2025.md"
+    status: FileSyncStatus                    # 同步狀態
+    local_modified_at: Optional[datetime]     # 本地最後修改時間
+    local_md5: Optional[str]                  # 本地 MD5 hash
+    cloud_modified_at: Optional[datetime]     # Google Drive 最後修改時間
+    cloud_md5: Optional[str]                  # Google Drive 的 md5Checksum
+    diff_stats: Optional[FileDiffStats]       # 僅 DIFFERENT 狀態時有值
+    suggested_action: SyncAction              # 系統建議的操作
+
+
+class SyncComparisonResult(BaseModel):
+    """完整的比較結果"""
+    files: List[FileSyncInfo]
+    total_local_only: int
+    total_cloud_only: int
+    total_same: int
+    total_different: int
+    compared_at: datetime
+
+
+class SyncOperationRequest(BaseModel):
+    """單筆同步操作請求"""
+    file_path: str
+    action: SyncAction
+
+    @validator('action')
+    def action_not_skip(cls, v):
+        if v == SyncAction.SKIP:
+            raise ValueError("操作不可為 skip，請只包含 upload 或 download")
+        return v
+
+
+class SyncExecuteRequest(BaseModel):
+    """批次同步操作請求"""
+    operations: List[SyncOperationRequest]
+
+    @validator('operations')
+    def operations_not_empty(cls, v):
+        if len(v) == 0:
+            raise ValueError("操作清單不可為空")
+        return v
+
+
+class SyncOperationResult(BaseModel):
+    """單筆操作執行結果"""
+    file_path: str
+    action: SyncAction
+    success: bool
+    error_message: Optional[str]
+
+
+class SyncExecuteResult(BaseModel):
+    """批次同步執行結果"""
+    total: int
+    success_count: int
+    failed_count: int
+    results: List[SyncOperationResult]
+    executed_at: datetime

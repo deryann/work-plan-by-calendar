@@ -549,6 +549,38 @@ class GoogleDriveStorageProvider(StorageProvider):
             logger.warning(f"列出檔案失敗: {relative_path}, {e}")
             return []
     
+    def list_files_with_metadata(self, relative_path: str = "") -> List[Dict[str, Any]]:
+        """列出目錄內的檔案，包含 md5Checksum 和 modifiedTime 等 metadata
+
+        用於同步功能的差異比較，不更改既有 list_files() 的介面。
+
+        Returns:
+            List of dicts with keys: name, md5Checksum, modifiedTime
+        """
+        try:
+            if relative_path:
+                folder_id = self._build_folder_path(relative_path + "/dummy")
+            else:
+                folder_id = self._get_base_folder_id()
+
+            query = (
+                f"'{folder_id}' in parents and "
+                f"mimeType != '{self.FOLDER_MIME_TYPE}' and "
+                f"trashed = false"
+            )
+
+            request = self.service.files().list(
+                q=query,
+                spaces='drive',
+                fields='files(name,md5Checksum,modifiedTime)',
+                orderBy='name'
+            )
+            results = self._execute_with_retry(request, f"列出檔案 metadata '{relative_path}'")
+            return results.get('files', [])
+        except Exception as e:
+            logger.warning(f"列出檔案 metadata 失敗: {relative_path}, {e}")
+            return []
+
     # ========================================
     # 連線測試
     # ========================================
