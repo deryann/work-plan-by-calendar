@@ -165,6 +165,17 @@ class SettingsModal {
             });
         }
 
+        // 同步管理按鈕 (sync-files, Issue #19)
+        const syncPanelBtn = document.getElementById('open-sync-panel-btn');
+        if (syncPanelBtn) {
+            syncPanelBtn.addEventListener('click', () => {
+                if (window.syncPanel) {
+                    this.hide();
+                    window.syncPanel.show();
+                }
+            });
+        }
+
         // Storage mode radio buttons (002-google-drive-storage)
         const storageModeRadios = document.querySelectorAll('.storage-mode-radio');
         storageModeRadios.forEach(radio => {
@@ -919,6 +930,12 @@ class SettingsModal {
 
         // Update storage UI when auth status changes
         this.updateStorageUI();
+
+        // 顯示/隱藏同步管理按鈕
+        const syncSection = document.getElementById('sync-management-section');
+        if (syncSection) {
+            syncSection.style.display = isConnected ? 'block' : 'none';
+        }
     }
 
     /**
@@ -1252,7 +1269,13 @@ class SettingsModal {
             window.dispatchEvent(new CustomEvent('storage-mode-changed', {
                 detail: { mode: newMode, status: result }
             }));
-            
+
+            // 切換到 Google Drive 模式時，自動開啟同步面板並比較
+            if (newMode === 'google_drive' && window.syncPanel) {
+                this.hide();  // 先關閉設定 Modal
+                window.syncPanel.show(true);  // 開啟同步面板並自動比較
+            }
+
         } catch (error) {
             Utils.hideLoading();
             console.error('Storage mode switch failed:', error);

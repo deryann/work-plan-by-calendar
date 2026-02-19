@@ -403,6 +403,39 @@ class PlanAPI {
             method: 'POST'
         });
     }
+
+    // ========================================
+    // Sync API (sync-files, Issue #19)
+    // ========================================
+
+    /**
+     * Compare local and Google Drive plan files using MD5 hash
+     * @returns {Promise<object>} SyncComparisonResult with file list and statistics
+     */
+    async compareSync() {
+        return await this.request('/sync/compare');
+    }
+
+    /**
+     * Execute sync operations (upload/download)
+     * @param {Array<{file_path: string, action: 'upload'|'download'}>} operations
+     * @returns {Promise<object>} SyncExecuteResult with per-file results
+     */
+    async executeSync(operations) {
+        return await this.request('/sync/execute', {
+            method: 'POST',
+            body: JSON.stringify({ operations })
+        });
+    }
+
+    /**
+     * Get file content from both local and Google Drive for diff view
+     * @param {string} filePath - Relative file path (e.g. "Year/2025.md")
+     * @returns {Promise<{file_path: string, local_content: string, cloud_content: string}>}
+     */
+    async getSyncDiff(filePath) {
+        return await this.request(`/sync/diff?file_path=${encodeURIComponent(filePath)}`);
+    }
 }
 
 // API client singleton
