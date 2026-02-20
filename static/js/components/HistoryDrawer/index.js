@@ -14,7 +14,7 @@ class HistoryDrawer {
         this.resizeHandle = document.getElementById('drawer-resize-handle');
         this.contentArea = document.getElementById('drawer-content');
         this.titleEl = document.getElementById('drawer-title');
-        this.periodLabel = document.getElementById('drawer-period-label');
+        this.typeButtons = document.querySelectorAll('.drawer-type-btn');
 
         this.isResizing = false;
         this.minWidth = 280;
@@ -121,17 +121,13 @@ class HistoryDrawer {
             this.backdrop.addEventListener('click', () => this.close());
         }
 
-        // Previous period
-        const prevBtn = document.getElementById('drawer-prev-btn');
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => this.navigatePrevious());
-        }
-
-        // Next period
-        const nextBtn = document.getElementById('drawer-next-btn');
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => this.navigateNext());
-        }
+        // Type selector buttons
+        this.typeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.type;
+                this.switchType(type);
+            });
+        });
 
         // Copy to current
         const copyBtn = document.getElementById('drawer-copy-btn');
@@ -148,6 +144,23 @@ class HistoryDrawer {
     }
 
     /**
+     * Switch to a different plan type
+     */
+    switchType(newType) {
+        if (!newType) return;
+        this.open(newType);
+    }
+
+    /**
+     * Update type button active states
+     */
+    updateTypeButtons() {
+        this.typeButtons.forEach(btn => {
+            btn.classList.toggle('drawer-type-btn--active', btn.dataset.type === this.currentType);
+        });
+    }
+
+    /**
      * Open drawer for a specific plan type
      */
     async open(planType) {
@@ -158,9 +171,8 @@ class HistoryDrawer {
         const appDate = this.app.currentDate;
         this.currentDate = Utils.getPreviousPeriod(planType, appDate);
 
-        // Update UI
-        this.updateTitle();
-        this.updatePeriodLabel();
+        // Update type buttons
+        this.updateTypeButtons();
 
         // Show drawer with animation
         if (this.backdrop) this.backdrop.classList.remove('hidden');
@@ -192,26 +204,6 @@ class HistoryDrawer {
     }
 
     /**
-     * Navigate to previous period
-     */
-    async navigatePrevious() {
-        if (!this.currentType || !this.currentDate) return;
-        this.currentDate = Utils.getPreviousPeriod(this.currentType, this.currentDate);
-        this.updatePeriodLabel();
-        await this.loadPlan();
-    }
-
-    /**
-     * Navigate to next period
-     */
-    async navigateNext() {
-        if (!this.currentType || !this.currentDate) return;
-        this.currentDate = Utils.getNextPeriod(this.currentType, this.currentDate);
-        this.updatePeriodLabel();
-        await this.loadPlan();
-    }
-
-    /**
      * Load plan content into drawer
      */
     async loadPlan() {
@@ -240,7 +232,6 @@ class HistoryDrawer {
             },
             onNavigate: (type, date) => {
                 this.currentDate = date;
-                this.updatePeriodLabel();
             }
         });
     }
@@ -273,24 +264,6 @@ class HistoryDrawer {
     getTypeLabel() {
         const labels = { day: '日', week: '週', month: '月', year: '年' };
         return labels[this.currentType] || '';
-    }
-
-    /**
-     * Update drawer title
-     */
-    updateTitle() {
-        if (this.titleEl) {
-            this.titleEl.textContent = `歷史${this.getTypeLabel()}計畫`;
-        }
-    }
-
-    /**
-     * Update period label
-     */
-    updatePeriodLabel() {
-        if (this.periodLabel && this.currentDate) {
-            this.periodLabel.textContent = Utils.formatPlanTitle(this.currentType, this.currentDate);
-        }
     }
 }
 

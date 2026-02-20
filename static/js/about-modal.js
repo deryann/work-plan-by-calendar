@@ -31,7 +31,7 @@ class AboutModal {
                     </div>
                     <div class="px-6 py-4">
                         <div class="text-center mb-4">
-                            <img src="/static/png/work_planner.png" alt="Work Planner" class="mx-auto w-32 h-40 object-cover rounded-lg shadow-md">
+                            <img src="/static/jpg/app.jpg" alt="Work Planner" class="mx-auto w-32 h-40 object-cover rounded-lg shadow-md">
                         </div>
                         <div class="space-y-3">
                             <div class="text-center">

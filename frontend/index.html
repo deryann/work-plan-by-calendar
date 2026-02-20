@@ -30,7 +30,7 @@
 <body class="h-screen overflow-hidden theme-light" style="background-color: var(--color-secondary);">
     <!-- Splash Screen -->
     <div id="splash-screen" class="fixed inset-0 bg-white flex items-center justify-center z-50 transition-opacity duration-1500">
-        <img src="/static/png/work_planner.png" alt="Work Planner" class="max-w-sm max-h-sm">
+        <img src="/static/jpg/app.jpg" alt="Work Planner" class="max-w-sm max-h-sm">
     </div>
 
     <!-- Main Container -->
@@ -206,19 +206,12 @@
                 </button>
             </div>
 
-            <!-- Drawer Navigation -->
-            <div class="p-2 border-b flex justify-between items-center" style="border-color: var(--color-border);">
-                <button id="drawer-prev-btn" class="nav-btn" title="前一期">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                </button>
-                <span id="drawer-period-label" class="text-sm font-medium" style="color: var(--color-text);"></span>
-                <button id="drawer-next-btn" class="nav-btn" title="後一期">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </button>
+            <!-- Drawer Type Selector -->
+            <div class="p-2 border-b flex justify-center items-center gap-2" style="border-color: var(--color-border);">
+                <button class="drawer-type-btn" data-type="year" title="歷史年計畫">年</button>
+                <button class="drawer-type-btn" data-type="month" title="歷史月計畫">月</button>
+                <button class="drawer-type-btn" data-type="week" title="歷史週計畫">週</button>
+                <button class="drawer-type-btn" data-type="day" title="歷史日計畫">日</button>
             </div>
 
             <!-- Drawer Content -->
