@@ -339,24 +339,72 @@
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
+    /* General utilities */
     .mobile-stack {
         flex-direction: column;
     }
-    
+
     .mobile-full-width {
         width: 100% !important;
     }
-    
+
     .mobile-hidden {
         display: none !important;
     }
-    
+
     .mobile-text-sm {
         font-size: 0.875rem;
     }
-    
+
     .mobile-p-2 {
         padding: 0.5rem;
+    }
+
+    /* Code blocks */
+    .markdown-preview pre {
+        border-radius: 0.25rem;
+        margin: 0.75rem 0;
+        padding: 0.75rem;
+    }
+
+    .copy-btn {
+        opacity: 1;
+        position: static;
+        margin: 0.5rem 0 0 0;
+        display: block;
+        width: 100%;
+    }
+
+    .mermaid-container {
+        margin: 1rem 0;
+        padding: 0.75rem;
+        border-radius: 0.25rem;
+    }
+
+    /* Focused layout */
+    #history-drawer {
+        width: 100% !important;
+    }
+
+    #breadcrumb-nav {
+        font-size: 0.75rem;
+    }
+
+    #breadcrumb-nav .mx-1 {
+        margin-left: 0.125rem;
+        margin-right: 0.125rem;
+    }
+
+    #card-stack {
+        padding: 0.5rem;
+    }
+
+    #card-stack .plan-card {
+        border-radius: 0.375rem;
+    }
+
+    #layout-mode-btn span {
+        display: none;
     }
 }
 
@@ -590,6 +638,17 @@
 .panel-title {
     color: var(--color-title-text);
     font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.2s ease;
+}
+
+.panel-title:hover {
+    opacity: 0.8;
+}
+
+.panel-title:active {
+    opacity: 0.6;
 }
 
 .title-text {
@@ -745,17 +804,6 @@
     white-space: pre-wrap;
 }
 
-/* Theme-specific adjustments for code blocks */
-.theme-dark .markdown-preview pre {
-    background-color: var(--color-secondary);
-    border-color: var(--color-border);
-}
-
-.theme-light .markdown-preview pre {
-    background-color: var(--color-secondary);
-    border-color: var(--color-border);
-}
-
 /* Language label for code blocks */
 .code-language-label {
     position: absolute;
@@ -768,28 +816,6 @@
     letter-spacing: 0.05em;
 }
 
-/* Responsive design for code blocks */
-@media (max-width: 768px) {
-    .markdown-preview pre {
-        border-radius: 0.25rem;
-        margin: 0.75rem 0;
-        padding: 0.75rem;
-    }
-    
-    .copy-btn {
-        opacity: 1;
-        position: static;
-        margin: 0.5rem 0 0 0;
-        display: block;
-        width: 100%;
-    }
-    
-    .mermaid-container {
-        margin: 1rem 0;
-        padding: 0.75rem;
-        border-radius: 0.25rem;
-    }
-}
 
 /* Panel Maximize Feature Styles */
 .panel-maximized {
@@ -955,20 +981,6 @@
     height: 100% !important;
 }
 
-.panel-title {
-    cursor: pointer;
-    user-select: none;
-    transition: opacity 0.2s ease;
-}
-
-.panel-title:hover {
-    opacity: 0.8;
-}
-
-.panel-title:active {
-    opacity: 0.6;
-}
-
 /* Print styles */
 @media print {
     .no-print {
@@ -1031,20 +1043,25 @@
    Google Auth Styles (002-google-drive-storage)
    ======================================== */
 
+/* Google auth buttons - shared styles */
+#google-connect-btn,
+#google-disconnect-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
 /* Google connect button */
 #google-connect-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
     color: #374151;
     background-color: #ffffff;
     border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    transition: all 0.2s ease;
-    cursor: pointer;
 }
 
 #google-connect-btn:hover {
@@ -1055,20 +1072,14 @@
 
 #google-connect-btn:focus {
     outline: none;
-    ring: 2px solid #3b82f6;
+    box-shadow: 0 0 0 2px #3b82f6;
 }
 
 /* Google disconnect button */
 #google-disconnect-btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
     color: #dc2626;
     background-color: #fef2f2;
     border: 1px solid #fecaca;
-    border-radius: 0.375rem;
-    transition: all 0.2s ease;
-    cursor: pointer;
 }
 
 #google-disconnect-btn:hover {
@@ -1256,7 +1267,6 @@
 .settings-tab-content .p-4.rounded-lg:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-}
 
 /* ========================================
    Focused Layout - Plan Card Styles
@@ -1381,37 +1391,6 @@
 /* ========================================
    Focused Layout - Mobile Responsive
    ======================================== */
-
-@media (max-width: 768px) {
-    /* Drawer goes full-width on mobile */
-    #history-drawer {
-        width: 100% !important;
-    }
-
-    /* Simplify breadcrumb on mobile */
-    #breadcrumb-nav {
-        font-size: 0.75rem;
-    }
-
-    #breadcrumb-nav .mx-1 {
-        margin-left: 0.125rem;
-        margin-right: 0.125rem;
-    }
-
-    /* Card stack reduce padding */
-    #card-stack {
-        padding: 0.5rem;
-    }
-
-    #card-stack .plan-card {
-        border-radius: 0.375rem;
-    }
-
-    /* Hide layout mode button text on mobile */
-    #layout-mode-btn span {
-        display: none;
-    }
-}
 
 @media (max-width: 480px) {
     /* Extra small screens */
